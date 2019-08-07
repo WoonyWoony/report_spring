@@ -10,7 +10,7 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>Login Page - Product Admin Template</title>
+	<title>헬로웍스 - 회원가입</title>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700" />
 	<!-- https://fonts.google.com/specimen/Open+Sans -->
 	<link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css" />
