@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.report.ware.SalesDAO">
+
+	<sql id="salesWhere">
+		<if test="sign_date_min!=null and sign_date_min.length()>0 and sign_date_max!=null and sign_date_max.length()>0">
+			and 
+			(
+				TO_CHAR(SIGN_DATE,'YYYYMM') BETWEEN #{sign_date_min} AND #{sign_date_max}
+			)
+		</if>
+		<if test="sign_date_min!=null and sign_date_min.length()>0 and (sign_date_max==null or sign_date_max.length()==0)">
+			and 
+			(
+				<![CDATA[
+				TO_CHAR(SIGN_DATE,'YYYYMM') >= #{sign_date_min}
+				]]>
+			)
+		</if>
+		<if test="sign_date_max!=null and sign_date_max.length()>0 and (sign_date_min==null or sign_date_min.length()==0)">
+			and 
+			(
+				<![CDATA[
+				TO_CHAR(SIGN_DATE,'YYYYMM') <= #{sign_date_max}
+				]]>
+			)
+		</if>
+		
+		<if test="sales_date_min!=null and sales_date_min.length()>0 and sales_date_max!=null and sales_date_max.length()>0">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE TO_CHAR(SALES_DATE_START,'YYYYMM') >= #{sales_date_min} AND TO_CHAR(SALES_DATE_END,'YYYYMM') <= #{sales_date_max})
+				]]>
+			)
+		</if>
+		<if test="sales_date_min!=null and sales_date_min.length()>0 and (sales_date_max==null or sales_date_max.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE TO_CHAR(SALES_DATE_START,'YYYYMM') >= #{sales_date_min})
+				]]>
+			)
+		</if>
+		<if test="sales_date_max!=null and sales_date_max.length()>0 and (sales_date_min==null or sales_date_min.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE TO_CHAR(SALES_DATE_END,'YYYYMM') <= #{sales_date_max})
+				]]>
+			)
+		</if>
+		
+		<if test="sign_state != null">
+			and (
+			<foreach collection="sign_state" item="sign_state" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					SIGN_CODE = ${sign_state}
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="sales_type != null">
+			and (
+			<foreach collection="sales_type" item="sales_type" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE SALES_TYPE_CODE = ${sales_type})
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="keyword != null and keyword.length()>0">
+			and 
+			(
+				REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE UPPER(REPORT_NAME) LIKE UPPER('%${keyword}%'))
+		  		OR EMP_NO IN (SELECT EMP_NO FROM EMPLOYEE WHERE UPPER(EMP_NAME) LIKE UPPER('%${keyword}%'))
+			)
+		</if>
+	</sql>
+
+
+
+	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+	
+	
+	
+	<select id='getSalesList' resultType="java.util.HashMap" >
+		select * from (select zzz.*, rownum RNUM from ( 
+			SELECT 
+				(SELECT REPORT_NO FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS REPORT_NO 
+				, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = (SELECT EMP_NO FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO)) AS EMP_NAME
+				, (SELECT REPORT_NAME FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS REPORT_NAME 
+				, (SELECT SALES_TYPE_NAME FROM CODE_SALES_TYPE WHERE SALES_TYPE_CODE = (SELECT SALES_TYPE_CODE FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO))||'' AS SALES_TYPE_NAME
+				, (SELECT SIGN_NAME FROM CODE_SIGN WHERE SIGN_CODE = SFR.SIGN_CODE)||'' AS SIGN_NAME
+				, TO_CHAR(SFR.SIGN_DATE, 'YYYY-MM-DD HH24:MI:SS')||'' AS SIGN_DATE
+				, (SELECT TO_CHAR(SALES_DATE_START,'YYYY-MM-DD HH24:MI:SS') FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS SALES_DATE_START
+				, (SELECT REPORT_CODE FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS REPORT_CODE 
+				, RETURN_NO||'' AS RETURN_NO
+				, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = (SELECT EMP_NO FROM SALES_REPORT WHERE REPORT_NO = SFR.REPORT_NO))) AS EMP_JIKUP
+				, TO_CHAR(SFR.SIGN_DATE, 'YYYYMMDD HH24:MI:SS') AS SIGN_DATE2
+            	, TO_CHAR(SYSDATE, 'YYYYMMDD HH24:MI:SS') AS SYSDATE2
+			FROM SIGN_FINISH_REPORT SFR WHERE EMP_NO = ${emp_no} AND REPORT_CODE = 2 AND REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE REVISE_CNT = SFR.RETURN_NO)
+			<include refid="salesWhere"></include>
+			ORDER BY 
+			<if test="sort != null and sort.length() > 0">
+				${sort} ${ascDesc},
+			</if> 
+			7 DESC ) zzz) 
+		where <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} and RNUM <= ${selectPageNo * rowCntPerPage} ]]>
+	</select>
+	
+	<!-- *************************************************** -->
+	<!-- 게시판 검색 총 행의 개수 검색하는 select 문을 내포한 select 태그 선언 -->
+	<!-- *************************************************** -->
+	<select id='getSalesListAllCnt' resultType="int" >
+		SELECT COUNT(*)
+		FROM SIGN_FINISH_REPORT SFR WHERE EMP_NO = ${emp_no} AND REPORT_CODE = 2 AND REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE REVISE_CNT = SFR.RETURN_NO)
+		<include refid="salesWhere"></include>
+	</select>
+	
+	
+	<insert id="first_insertSalesReport">
+		INSERT INTO SALES_REPORT VALUES(
+			(SELECT NVL(MAX(REPORT_NO),0) + 1 FROM SALES_REPORT)
+			, 2
+			, #{report_name}
+			, ${sales_type_code}
+			, TO_DATE(#{sales_date_start}, 'YYYY-MM-DD HH24:MI')
+			, TO_DATE(#{sales_date_end}, 'YYYY-MM-DD HH24:MI')
+			, #{sales_content}
+			, #{sales_result}
+			, ${emp_no}
+			<if test="sign_state == 1">
+			, 0
+			</if>
+			<if test="sign_state == 4">
+			, 1
+			</if>
+			, #{sales_company}
+			, #{sales_name}
+			, #{sales_jikup}
+			, #{sales_phone}
+		)
+	</insert>
+	
+	<insert id="first_insertSignFinishReport">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${emp_no}
+			, 2
+			, (SELECT MAX(REPORT_NO) FROM SALES_REPORT)
+			, sysdate
+			, ${sign_state}
+			<if test="sign_state == 1">
+			, 0
+			</if>
+			<if test="sign_state == 4">
+			, 1
+			</if>
+		)
+	</insert>
+	
+	<insert id="first_insertSignFinishReport_Sign_emp">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${sign_emp_no}
+			, 2
+			, (SELECT MAX(REPORT_NO) FROM SALES_REPORT)
+			, null
+			, 3
+			, 0
+		)
+	</insert>
+	
+	<insert id="first_insertReturnReport">
+		INSERT INTO RETURN_REPORT
+		VALUES (
+			(SELECT MAX(SIGN_FINISH_NO) FROM SIGN_FINISH_REPORT)
+			, #{return_reason}
+		)
+	</insert>
+	
+	
+	<!-- ================== -->
+	
+	<select id='getSalesDTO' parameterType="hashmap" resultType="com.report.ware.SalesDTO">
+		SELECT
+			REPORT_NO 
+			, REPORT_CODE
+			, REPORT_NAME
+			, SALES_TYPE_CODE
+			, TO_CHAR(SALES_DATE_START,'YYYY') SALES_YEAR_START
+			, TO_CHAR(SALES_DATE_START,'MM') SALES_MONTH_START
+			, TO_CHAR(SALES_DATE_START,'DD') SALES_DAY_START
+			, TO_CHAR(SALES_DATE_START,'HH24') SALES_HOUR_START
+			, TO_CHAR(SALES_DATE_START,'MI') SALES_MINUTE_START
+			, TO_CHAR(SALES_DATE_END,'YYYY') SALES_YEAR_END
+			, TO_CHAR(SALES_DATE_END,'MM') SALES_MONTH_END
+			, TO_CHAR(SALES_DATE_END,'DD') SALES_DAY_END
+			, TO_CHAR(SALES_DATE_END,'HH24') SALES_HOUR_END
+			, TO_CHAR(SALES_DATE_END,'MI') SALES_MINUTE_END
+			, SALES_CONTENT
+			, SALES_RESULT
+			, EMP_NO
+			, SALES_COMPANY
+			, SALES_NAME
+			, SALES_JIKUP
+			, SALES_PHONE
+			, (SELECT SIGN_CODE FROM SIGN_FINISH_REPORT WHERE REPORT_CODE = SR.REPORT_CODE AND REPORT_NO = SR.REPORT_NO AND EMP_NO = ${emp_no} AND RETURN_NO=${return_no}) AS SIGN_NAME
+		FROM SALES_REPORT SR
+		WHERE REPORT_NO = ${report_no}
+	</select>
+	
+	
+	<select id='getSignList' parameterType="hashmap" resultType="java.util.HashMap">
+		SELECT
+			(SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+			, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+			, (SELECT SIGN_NAME FROM CODE_SIGN WHERE SIGN_CODE = SFR.SIGN_CODE)||'' AS SIGN_NAME
+			, (SELECT RETURN_RESULT FROM RETURN_REPORT WHERE SFR_NO = SFR.SIGN_FINISH_NO)||'' AS RETURN_RESULT
+			, RETURN_NO||'' AS RETURN_NO
+			, EMP_NO||'' AS EMP_NO
+			, TO_CHAR(SIGN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SIGN_DATE
+		FROM SIGN_FINISH_REPORT SFR
+		WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no}
+		ORDER BY SIGN_FINISH_NO
+	</select>
+	
+	<select id='getMax_return_no' parameterType="hashmap" resultType="int">
+		SELECT MAX(RETURN_NO) FROM SIGN_FINISH_REPORT WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no}
+	</select>
+	
+	<select id="pickNextEmployee" resultType="java.util.HashMap">
+		SELECT * 
+		FROM ( SELECT ZZZ.*,ROWNUM RNUM 
+					FROM(
+						SELECT
+							DISTINCT EMP_NO||'' AS EMP_NO	
+							, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+							, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+							, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+							, SIGN_CODE||'' AS SIGN_NAME
+						FROM SIGN_FINISH_REPORT SFR
+						WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO=${report_no})
+						ORDER BY DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+						) ZZZ 
+			) 
+		WHERE RNUM = (
+						SELECT RNUM+1 
+						FROM ( 
+							SELECT ZZZ.*,ROWNUM RNUM 
+							FROM(
+								SELECT
+									DISTINCT EMP_NO||'' AS EMP_NO	
+									, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+									, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+									, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+								FROM SIGN_FINISH_REPORT SFR
+								WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO=${report_no})
+								ORDER BY DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+								)ZZZ 
+			) WHERE EMP_NO=${loginemp_no} )
+	</select>
+	
+	
+	<!-- update 보고서 내용물 -->
+	<update id="updateSalesReport_inside">
+		UPDATE SALES_REPORT
+			SET 
+			REPORT_NAME = #{report_name}
+			, SALES_TYPE_CODE = ${sales_type_code}
+			, SALES_DATE_START = TO_DATE(#{sales_date_start}, 'YYYY-MM-DD HH24:MI')
+			, SALES_DATE_END = TO_DATE(#{sales_date_end}, 'YYYY-MM-DD HH24:MI')
+			, SALES_CONTENT = #{sales_content}
+			, SALES_RESULT = #{sales_result}
+			, SALES_COMPANY = #{sales_company}
+			, SALES_NAME = #{sales_name}
+			, SALES_JIKUP = #{sales_jikup}
+			, SALES_PHONE = #{sales_phone}
+			WHERE REPORT_NO = ${report_no}
+	</update>
+	
+	<!-- SIGN_FINISH_REPORT 의  record_code = 1 , record_no = 지금 들어온 값 , emp_no == 결재누른사람emp_no 인 행 SIGN_CODE update 하기 -->
+	<update id="updateSignFinishReport">
+		UPDATE SIGN_FINISH_REPORT 
+		SET SIGN_CODE = ${sign_state}, SIGN_DATE = SYSDATE
+		WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no} 
+			AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO = ${report_no})
+	</update>
+	
+	
+	
+	<!-- sign_finish_report에 그 다음 결재자 insert 하기 -->
+	<insert id="insertSignFinishReport">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${sign_emp_no}
+			, 2
+			, ${report_no}
+			, null
+			, 3
+			, (SELECT RETURN_NO FROM SIGN_FINISH_REPORT
+				WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no} 
+				AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO = ${report_no}))
+		)
+	</insert>
+	
+	
+	<!-- ================= -->
+	<update id="updateSignFinishReport_Boryu">
+		update sign_finish_report
+		set  sign_code=${sign_state} , sign_date = sysdate
+		where report_code=2 and report_no=${report_no} and emp_no=${loginemp_no} and return_no = (select revise_cnt from SALES_REPORT where report_no=${report_no})
+	</update>
+	
+	
+	<update id="updateSalesReport">
+		UPDATE SALES_REPORT
+		SET REVISE_CNT = REVISE_CNT + 1
+		WHERE REPORT_NO=${report_no}
+	</update>
+	
+	
+	<select id='getReturn_emp_no' resultType="String">
+		SELECT EMP_NO||'' AS EMP_NO
+		FROM SIGN_FINISH_REPORT
+		WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT-1 FROM SALES_REPORT WHERE REPORT_NO=${report_no})
+	</select>
+	
+	<insert id="insertSignFinishReport_many">
+		INSERT ALL	
+			<foreach item="return_emp_no" collection="return_emp_no" index="idx" >
+				INTO SIGN_FINISH_REPORT 
+				VALUES
+				(
+					(SELECT NVL(MAX(SIGN_FINISH_NO),0)+${idx}+1 FROM SIGN_FINISH_REPORT)
+					, ${return_emp_no}
+					, 2
+					, ${report_no}
+					, sysdate
+					, 4
+					, (SELECT MAX(RETURN_NO)+1 FROM SIGN_FINISH_REPORT WHERE REPORT_NO=${report_no} AND REPORT_CODE = 2)
+				)
+			</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+	
+	<insert id="insertSignFinishReport_many_finish">
+		INSERT ALL	
+			<foreach item="return_emp_no" collection="return_emp_no" index="idx" >
+				INTO SIGN_FINISH_REPORT 
+				VALUES
+				(
+					(SELECT NVL(MAX(SIGN_FINISH_NO),0)+${idx}+1 FROM SIGN_FINISH_REPORT)
+					, ${return_emp_no}
+					, 2
+					, ${report_no}
+					, sysdate
+					, 2
+					, (SELECT MAX(RETURN_NO)+1 FROM SIGN_FINISH_REPORT WHERE REPORT_NO=${report_no} AND REPORT_CODE = 2)
+				)
+			</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+	
+	<insert id="insertReturnReport">
+		INSERT INTO RETURN_REPORT
+		VALUES (
+			(SELECT SIGN_FINISH_NO FROM SIGN_FINISH_REPORT
+			 WHERE REPORT_CODE = 2 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no}
+			         AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO = ${report_no}))
+			, #{return_reason}
+		)
+	</insert>
+	
+	<update id="updateNextSignFinishReport">
+		UPDATE SIGN_FINISH_REPORT
+		SET SIGN_CODE = 3, SIGN_DATE = NULL
+		WHERE REPORT_CODE = 2 AND REPORT_NO=${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO = ${report_no})
+			AND EMP_NO =#{sign_emp_no}
+	</update>
+	
+	
+	
+</mapper>

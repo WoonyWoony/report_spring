@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.report.ware.EmployeeDAO">
+<sql id="employeeWhere">
+	<if test="(keyword != null and keyword.length()>0)">
+		 and(
+			 upper(emp_no) like upper('%${keyword}%')  
+	         or upper(emp_name) like upper('%${keyword}%')
+	         or JIKUP_CODE IN (SELECT JIKUP_CODE FROM CODE_JIKUP WHERE upper(jikup_name) like upper('%${keyword}%'))
+	         or DEP_NO IN (SELECT DEP_NO FROM CODE_DEPT WHERE upper(dep_name) like upper('%${keyword}%'))
+	         or upper(mgr_emp_no) like upper('%${keyword}%')
+	         OR UPPER((SELECT EMP_NAME FROM EMPLOYEE WHERE E.MGR_EMP_NO=EMP_NO)) like upper('%${keyword}%')
+	         or upper(phone_num) like upper('%${keyword}%')  
+		  ) 
+	</if>
+	<if test="dep_no != null and dep_no.length() > 0">
+	 and ( dep_no = #{dep_no} )
+	</if>
+	<if test="jikup_code != null and jikup_code.length() > 0">
+      and ( jikup_code = #{jikup_code} )
+	</if>
+</sql>
+
+<sql id="employeeWhere_before">
+	<if test="(keyword != null and keyword.length()>0)">
+		 and(
+			 upper(emp_no) like upper('%${keyword}%')  
+	         or upper(emp_name) like upper('%${keyword}%')
+	         or JIKUP_CODE IN (SELECT JIKUP_CODE FROM CODE_JIKUP WHERE upper(jikup_name) like upper('%${keyword}%'))
+	         or DEP_NO IN (SELECT DEP_NO FROM CODE_DEPT WHERE upper(dep_name) like upper('%${keyword}%'))
+	         or upper(mgr_emp_no) like upper('%${keyword}%')
+	         OR UPPER((SELECT EMP_NAME FROM EMPLOYEE WHERE E.MGR_EMP_NO=EMP_NO)) like upper('%${keyword}%')
+	         or upper(phone_num) like upper('%${keyword}%')  
+	         or ALLOW_CODE IN (SELECT ALLOW_CODE FROM CODE_ALLOW WHERE upper(allow_name) like upper('%${keyword}%'))
+		  ) 
+	</if>
+	<if test="dep_no != null and dep_no.length() > 0">
+	 and ( dep_no = #{dep_no} )
+	</if>
+	<if test="jikup_code != null and jikup_code.length() > 0">
+      and ( jikup_code = #{jikup_code} )
+	</if>
+</sql>
+
+
+	<select id="getEmployeeList" resultType="java.util.HashMap">
+		select * from (	select	zzz.* , rownum RNUM	from 
+			( select
+				ALLOW_CODE||'' AS ALLOW_CODE 
+				, EMP_NO||'' AS EMP_NO 
+				, EMP_NAME
+				, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = E.JIKUP_CODE) AS JIKUP_NAME
+				, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = E.DEP_NO) AS DEP_NAME
+				, MGR_EMP_NO||'' AS MGR_EMP_NO
+				, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = E.MGR_EMP_NO) AS MGR_EMP_NAME
+				, PHONE_NUM 
+				from EMPLOYEE E
+				WHERE ALLOW_CODE = 2
+				<include refid="employeeWhere"></include>
+				ORDER BY
+				<if test="sort != null and sort.length() > 0">
+					<if test="sort == 2">
+						(SELECT EMP_NO FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) ${ascDesc},
+					</if>
+					<if test="sort == 4">
+						(SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) ${ascDesc},
+					</if>
+					<if test="sort != 4 and sort != 2">
+						${sort} ${ascDesc},
+					</if>
+				</if>
+				(SELECT EMP_NO FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) 
+			) zzz )	where <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} and RNUM <= ${selectPageNo * rowCntPerPage} ]]> 
+	</select>
+
+	<select id="getEmployeeListAllCnt" resultType="int">
+		SELECT COUNT(*) FROM EMPLOYEE E
+		WHERE ALLOW_CODE = 2
+		<include refid="employeeWhere"></include>
+	</select>
+	
+	<select id="getEmployeeList_beforeAllow" resultType="java.util.HashMap">
+		select * from (	select	zzz.* , rownum RNUM	from 
+			( select
+				ALLOW_CODE||'' AS ALLOW_CODE 
+				, EMP_NO||'' AS EMP_NO 
+				, EMP_NAME
+				, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = E.JIKUP_CODE) AS JIKUP_NAME
+				, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = E.DEP_NO) AS DEP_NAME
+				, MGR_EMP_NO||'' AS MGR_EMP_NO
+				, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = E.MGR_EMP_NO) AS MGR_EMP_NAME
+				, PHONE_NUM 
+				, (SELECT ALLOW_NAME FROM CODE_ALLOW WHERE ALLOW_CODE = E.ALLOW_CODE) AS ALLOW_NAME
+				from EMPLOYEE E
+				WHERE (ALLOW_CODE = 1 OR ALLOW_CODE = 3)
+				<include refid="employeeWhere_before"></include>
+				ORDER BY
+				<if test="sort != null and sort.length() > 0">
+					<if test="sort == 2">
+						(SELECT EMP_NO FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) ${ascDesc},
+					</if>
+					<if test="sort == 4">
+						(SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) ${ascDesc},
+					</if>
+					<if test="sort != 4 and sort != 2">
+						${sort} ${ascDesc},
+					</if>
+				</if>
+				(SELECT EMP_NO FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) 
+			) zzz )	where <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} and RNUM <= ${selectPageNo * rowCntPerPage} ]]> 
+	</select>
+
+	<select id="getEmployeeListAllCnt_beforeAllow" resultType="int">
+		SELECT COUNT(*) FROM EMPLOYEE E
+		WHERE (ALLOW_CODE = 1 OR ALLOW_CODE = 3)
+		<include refid="employeeWhere_before"></include>
+	</select>
+	
+	<select id="getEmployee" resultType="java.util.HashMap" >
+		select
+		EMP_NO||'' AS EMP_NO
+		, EMP_NAME
+		, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = E.JIKUP_CODE) AS JIKUP_NAME
+		, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = E.DEP_NO) AS DEP_NAME
+		, MGR_EMP_NO||'' AS MGR_EMP_NO
+		, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = E.MGR_EMP_NO) AS MGR_EMP_NAME
+		, PHONE_NUM
+		, JIKUP_CODE||'' AS JIKUP_CODE
+		, DEP_NO||'' AS DEP_NO
+		, ROLE
+		, JUMIN_NUM
+		, EMAIL
+		, ALLOW_CODE
+		from EMPLOYEE E
+		where EMP_NO=#{EMP_NO}
+	</select>	
+
+	<insert id="insertemp">
+		insert into employee(
+		emp_no
+		,emp_name
+		,emp_pwd
+		,mgr_emp_no
+		,dep_no
+		,jikup_code
+		,jumin_num
+		,email
+		,phone_num
+		,role
+		,allow_code
+		) values(
+		#{emp_no}
+		,#{emp_name}
+		,#{emp_pwd}
+		,#{mgr_emp_no}
+		,#{dep_no}
+		,#{jikup_code}
+		,#{jumin_num}
+		,#{email}
+		,#{phone_num}
+		,#{role}
+		,${allow_code}
+		)
+	</insert>
+
+	<select id="getDepList" resultType="java.util.HashMap">
+		select
+		dep_no "dep_no"
+		,dep_name "dep_name"
+		from code_dept
+	</select>
+	<select id="getJikupList" resultType="java.util.HashMap">
+		select
+		jikup_code "jikup_code"
+		,jikup_name "jikup_name"
+		from code_jikup
+	</select>
+	<select id='getEmployeeAllList' resultType="java.util.HashMap" >
+		SELECT 	
+			emp_no||'' as "emp_no"
+			, emp_name||'' as "emp_name"
+			, dep_no||'' as "dep_no"
+			, jikup_code||'' as "jikup_code"
+			, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = e.DEP_NO)||'' AS "dep_name"
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = e.JIKUP_CODE)||'' AS "jikup_name"
+		from EMPLOYEE E
+	</select>
+	<select id='getMgrEmployeeList' resultType="java.util.HashMap" >
+		SELECT 	
+			emp_no||'' as "mgr_emp_no"
+			, emp_name||'' as "mgr_emp_name"
+			, dep_no||'' as "mgr_dep_no"
+			, jikup_code||'' as "mgr_jikup_code"
+			, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = e.DEP_NO)||'' AS "mgr_dep_name"
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = e.JIKUP_CODE)||'' AS "mgr_jikup_name"
+		from EMPLOYEE E
+		WHERE 1=1 and ALLOW_CODE = 2
+		<if test="dep_no != null and dep_no.length() > 0">
+			 and dep_no=#{dep_no} 
+		</if>
+		<if test="jikup_code != null and jikup_code.length() > 0">
+		 	and jikup_code>=#{jikup_code} 
+		</if>
+		ORDER BY (SELECT JIKUP_CODE FROM CODE_JIKUP WHERE JIKUP_CODE = E.JIKUP_CODE), EMP_NO
+	</select>
+
+
+
+	<select id="getEmployeeCnt" parameterType="com.report.ware.EmployeeDTO" resultType="int">
+		select count(*) from from EMPLOYEE E where emp_no=${emp_no}
+	</select>
+	
+	<select id="getMgrEmployeeCnt" parameterType="com.report.ware.EmployeeDTO" resultType="int">
+		SELECT count(*) 
+			from EMPLOYEE E 
+			WHERE dep_no=#{dep_no} AND JIKUP_CODE>=#{jikup_code}		
+	</select>
+	
+
+	
+	<update id="updateEmployee" >
+	UPDATE EMPLOYEE
+		SET
+		EMP_NO = ${emp_no}
+		, EMP_NAME = #{emp_name}
+		<if test="new_emp_pwd != null and new_emp_pwd.length() > 0">
+			, EMP_PWD = #{new_emp_pwd}
+		</if>
+		, JIKUP_CODE=#{jikup_code}
+		, EMAIL = #{email}
+		, ROLE = #{role}
+		, MGR_EMP_NO = #{mgr_emp_no}
+		, DEP_NO = #{dep_no}
+		, JUMIN_NUM = #{jumin_num}
+		, PHONE_NUM = #{phone_num}
+		, ALLOW_CODE = ${allow_code}
+		WHERE EMP_NO = ${beforeEmp_no}
+	</update>
+	
+	<delete id="deleteEmployee" >
+		DELETE FROM employee WHERE emp_no=${emp_no}
+	</delete>	
+	
+	<select id="getAlreadyCnt" resultType="int">
+		SELECT COUNT(*) FROM EMPLOYEE WHERE EMP_NO = ${emp_no}
+	</select>
+	
+	
+</mapper>

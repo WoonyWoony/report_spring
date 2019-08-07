@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.report.ware.CalendarDAO">
+	<insert id="insertCalendar">
+		INSERT INTO CALENDAR VALUES(
+		(SELECT NVL(MAX(CALENDAR_NO),0) + 1 FROM CALENDAR)
+		, ${emp_no}
+		, #{calendar_title}
+		, TO_DATE(#{calendar_start_date}, 'YYYY-MM-DD')
+		, TO_DATE(#{calendar_end_date}, 'YYYY-MM-DD') + 1
+		)
+	</insert>
+	
+	<select id="getCalendarList" parameterType="String" resultType="java.util.HashMap">
+		SELECT
+			CALENDAR_NO AS "id"
+			, CALENDAR_TITLE AS "title"
+			, TO_CHAR(CALENDAR_START_DATE, 'YYYY-MM-DD') AS "start"
+			, TO_CHAR(CALENDAR_END_DATE, 'YYYY-MM-DD') AS "end"
+		FROM CALENDAR
+		WHERE EMP_NO = ${value}
+	</select>
+	
+	<delete id="deleteCalendar">
+		DELETE FROM CALENDAR WHERE CALENDAR_NO = ${calendar_id}
+	</delete>
+	
+	<update id="updateCalendar">
+		UPDATE CALENDAR	SET
+		CALENDAR_START_DATE = TO_DATE(#{calendar_start_date}, 'YYYY-MM-DD')
+		, CALENDAR_END_DATE = TO_DATE(#{calendar_end_date}, 'YYYY-MM-DD')
+		WHERE CALENDAR_NO = ${calendar_id}
+	</update>
+</mapper>

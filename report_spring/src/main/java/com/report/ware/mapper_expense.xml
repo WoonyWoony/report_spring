@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.report.ware.ExpenseDAO">
+
+
+	<sql id="expenseWhere">
+		<if test="sign_date_min!=null and sign_date_min.length()>0 and sign_date_max!=null and sign_date_max.length()>0">
+			and 
+			(
+				TO_CHAR(SIGN_DATE,'YYYYMM') BETWEEN #{sign_date_min} AND #{sign_date_max}
+			)
+		</if>
+		<if test="sign_date_min!=null and sign_date_min.length()>0 and (sign_date_max==null or sign_date_max.length()==0)">
+			and 
+			(
+				<![CDATA[
+				TO_CHAR(SIGN_DATE,'YYYYMM') >= #{sign_date_min}
+				]]>
+			)
+		</if>
+		<if test="sign_date_max!=null and sign_date_max.length()>0 and (sign_date_min==null or sign_date_min.length()==0)">
+			and 
+			(
+				<![CDATA[
+				TO_CHAR(SIGN_DATE,'YYYYMM') <= #{sign_date_max}
+				]]>
+			)
+		</if>
+		
+		<if test="expense_date_min!=null and expense_date_min.length()>0 and expense_date_max!=null and expense_date_max.length()>0">
+			and 
+			(
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE TO_CHAR(EXPENSE_DATE,'YYYYMM') BETWEEN #{expense_date_min} AND #{expense_date_max})
+			)
+		</if>
+		<if test="expense_date_min!=null and expense_date_min.length()>0 and (expense_date_max==null or expense_date_max.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE TO_CHAR(EXPENSE_DATE,'YYYYMM') >= #{expense_date_min})
+				]]>
+			)
+		</if>
+		<if test="expense_date_max!=null and expense_date_max.length()>0 and (expense_date_min==null or expense_date_min.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE TO_CHAR(EXPENSE_DATE,'YYYYMM') <= #{expense_date_max})
+				]]>
+			)
+		</if>
+		
+		<if test="sign_state != null">
+			and (
+			<foreach collection="sign_state" item="sign_state" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					SIGN_CODE = ${sign_state}
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="expense_method != null">
+			and (
+			<foreach collection="expense_method" item="expense_method" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE EXPENSE_METHOD_CODE = ${expense_method})
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="expense_field != null">
+			and (
+			<foreach collection="expense_field" item="expense_field" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE EXPENSE_FIELD_CODE = ${expense_field})
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="expense_price_min != null and expense_price_max != null and expense_price_min.length()>0 and expense_price_max.length()>0">
+			AND
+			(
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE EXPENSE_PRICE BETWEEN ${expense_price_min} AND ${expense_price_max})
+			)
+		</if>
+		<if test="keyword != null and keyword.length()>0">
+			and 
+			(
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE UPPER(REPORT_NAME) LIKE UPPER('%${keyword}%'))
+		  		OR EMP_NO IN (SELECT EMP_NO FROM EMPLOYEE WHERE UPPER(EMP_NAME) LIKE UPPER('%${keyword}%'))
+		  		OR REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE UPPER(RECEIPT_NO) LIKE UPPER('%${keyword}%') )
+			)
+		</if>
+	</sql>
+
+
+
+	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+	
+	
+	
+	<select id='getExpenseList' parameterType="com.report.ware.ExpenseSearchDTO" resultType="java.util.HashMap" >
+	select * from (select zzz.*, rownum RNUM from ( 
+		 SELECT 
+			(SELECT REPORT_NO FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS REPORT_NO 
+			, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = (SELECT EMP_NO FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO)) AS EMP_NAME
+			, (SELECT REPORT_NAME FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS REPORT_NAME 
+			, (SELECT EXPENSE_FIELD_NAME FROM CODE_EXPENSE_FIELD WHERE EXPENSE_FIELD_CODE = (SELECT EXPENSE_FIELD_CODE FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO))||'' AS EXPENSE_FIELD_NAME
+			, (SELECT SIGN_NAME FROM CODE_SIGN WHERE SIGN_CODE = SFR.SIGN_CODE)||'' AS SIGN_NAME
+			, TO_CHAR(SFR.SIGN_DATE, 'YYYY-MM-DD HH24:MI:SS')||'' AS SIGN_DATE
+			, (SELECT TO_CHAR(EXPENSE_DATE,'YYYY-MM-DD') FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS EXPENSE_DATE
+			, (SELECT TO_CHAR(EXPENSE_PRICE,'999,999,999,999') FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS EXPENSE_PRICE
+			, (SELECT EXPENSE_METHOD_NAME FROM CODE_EXPENSE_METHOD WHERE EXPENSE_METHOD_CODE = (SELECT EXPENSE_METHOD_CODE FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO))||'' AS EXPENSE_METHOD_NAME
+			, (SELECT RECEIPT_NO FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO)||'' AS RECEIPT_NO
+			, RETURN_NO||'' AS RETURN_NO
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = (SELECT EMP_NO FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO))) AS EMP_JIKUP
+			, TO_CHAR(SFR.SIGN_DATE, 'YYYYMMDD HH24:MI:SS') AS SIGN_DATE2
+            , TO_CHAR(SYSDATE, 'YYYYMMDD HH24:MI:SS') AS SYSDATE2
+		FROM SIGN_FINISH_REPORT SFR WHERE EMP_NO = ${emp_no} AND REPORT_CODE = 1 AND REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE REVISE_CNT = SFR.RETURN_NO)
+		<include refid="expenseWhere"></include>
+		ORDER BY 
+		<if test="sort != null and sort.length() > 0">
+			<if test="sort == 8">
+				(SELECT EXPENSE_PRICE FROM EXPENSE_REPORT WHERE REPORT_NO = SFR.REPORT_NO) ${ascDesc},
+			</if>
+			<if test="sort != 8">
+				${sort} ${ascDesc},
+			</if>
+		</if> 
+		7 DESC  ) zzz) 
+		where <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} and RNUM <= ${selectPageNo * rowCntPerPage} ]]>
+	</select>
+	
+	<!-- *************************************************** -->
+	<!-- 게시판 검색 총 행의 개수 검색하는 select 문을 내포한 select 태그 선언 -->
+	<!-- *************************************************** -->
+	<select id='getExpenseListAllCnt' parameterType="com.report.ware.ExpenseSearchDTO" resultType="int" >
+		SELECT COUNT(*)
+		FROM SIGN_FINISH_REPORT SFR WHERE EMP_NO = ${emp_no} AND REPORT_CODE = 1 AND REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE REVISE_CNT = SFR.RETURN_NO)
+		<include refid="expenseWhere"></include>
+	</select>
+	
+	<select id='getSuperiorList' parameterType="int" resultType="java.util.HashMap">
+		SELECT
+			EMP_NO||'' AS EMP_NO
+			, EMP_NAME
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE E.JIKUP_CODE = JIKUP_CODE) AS JIKUP_NAME
+			, (SELECT DEP_NAME FROM CODE_DEPT WHERE E.DEP_NO = DEP_NO) AS DEP_NAME
+		FROM EMPLOYEE E
+		<![CDATA[
+		WHERE JIKUP_CODE > (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = ${value})
+		]]>
+	</select>
+	
+	<insert id="first_insertExpenseReport">
+		INSERT INTO EXPENSE_REPORT VALUES(
+			(SELECT NVL(MAX(REPORT_NO),0) + 1 FROM EXPENSE_REPORT)
+			, 1
+			, #{report_name}
+			, ${expense_field_code}
+			, ${expense_price}
+			, ${expense_method_code}
+			, TO_DATE(#{expense_date}, 'YYYY-MM-DD')
+			, #{receipt_no}
+			, #{remarks}
+			, ${emp_no}
+			<if test="sign_state == 1">
+			, 0
+			</if>
+			<if test="sign_state == 4">
+			, 1
+			</if>
+		)
+	</insert>
+	
+	<insert id="first_insertSignFinishReport">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${emp_no}
+			, 1
+			, (SELECT MAX(REPORT_NO) FROM EXPENSE_REPORT)
+			, sysdate
+			, ${sign_state}
+			<if test="sign_state == 1">
+			, 0
+			</if>
+			<if test="sign_state == 4">
+			, 1
+			</if>
+		)
+	</insert>
+	
+	<insert id="first_insertSignFinishReport_Sign_emp">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${sign_emp_no}
+			, 1
+			, (SELECT MAX(REPORT_NO) FROM EXPENSE_REPORT)
+			, null
+			, 3
+			, 0
+		)
+	</insert>
+	
+	<insert id="first_insertReturnReport">
+		INSERT INTO RETURN_REPORT
+		VALUES (
+			(SELECT MAX(SIGN_FINISH_NO) FROM SIGN_FINISH_REPORT)
+			, #{return_reason}
+		)
+	</insert>
+	
+	<select id='getExpenseDTO' parameterType="hashmap" resultType="com.report.ware.ExpenseDTO">
+		SELECT
+			REPORT_NO 
+			, REPORT_NAME
+			, EMP_NO
+			, EXPENSE_FIELD_CODE
+			, TO_CHAR(EXPENSE_PRICE,'999,999,999,999') AS EXPENSE_PRICE
+			, EXPENSE_METHOD_CODE
+			, RECEIPT_NO
+			, TO_CHAR(EXPENSE_DATE,'YYYY') EXPENSE_YEAR
+			, TO_CHAR(EXPENSE_DATE,'MM') EXPENSE_MONTH
+			, TO_CHAR(EXPENSE_DATE,'DD') EXPENSE_DAY
+			, REMARKS
+			, (SELECT SIGN_CODE FROM SIGN_FINISH_REPORT WHERE REPORT_CODE = ER.REPORT_CODE AND REPORT_NO = ER.REPORT_NO AND EMP_NO = ${emp_no} AND RETURN_NO=${return_no}) AS SIGN_NAME
+		FROM EXPENSE_REPORT ER
+		WHERE REPORT_NO = ${report_no}
+	</select>
+	
+	
+	<select id='getSignList' parameterType="hashmap" resultType="java.util.HashMap">
+		SELECT
+			(SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+			, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+			, (SELECT SIGN_NAME FROM CODE_SIGN WHERE SIGN_CODE = SFR.SIGN_CODE)||'' AS SIGN_NAME
+			, (SELECT RETURN_RESULT FROM RETURN_REPORT WHERE SFR_NO = SFR.SIGN_FINISH_NO)||'' AS RETURN_RESULT
+			, RETURN_NO||'' AS RETURN_NO
+			, EMP_NO||'' AS EMP_NO
+			, TO_CHAR(SIGN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SIGN_DATE
+		FROM SIGN_FINISH_REPORT SFR
+		WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no}
+		ORDER BY SIGN_FINISH_NO
+	</select>
+	
+	<select id='getMax_return_no' parameterType="hashmap" resultType="int">
+		SELECT MAX(RETURN_NO) FROM SIGN_FINISH_REPORT WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no}
+	</select>
+	
+	<!-- update 보고서 내용물 -->
+	<update id="updateExpenseReport_inside">
+		UPDATE EXPENSE_REPORT
+			SET 
+			REPORT_NAME = #{report_name}
+			, EXPENSE_FIELD_CODE = ${expense_field_code}
+			, EXPENSE_PRICE = ${expense_price}
+			, EXPENSE_METHOD_CODE = ${expense_method_code}
+			, EXPENSE_DATE = TO_DATE(#{expense_date}, 'YYYY-MM-DD')
+			, RECEIPT_NO = #{receipt_no}
+			, REMARKS = #{remarks}
+			WHERE REPORT_NO = ${report_no}
+	</update>
+	
+	<!-- SIGN_FINISH_REPORT 의  record_code = 1 , record_no = 지금 들어온 값 , emp_no == 결재누른사람emp_no 인 행 SIGN_CODE update 하기 -->
+	<update id="updateSignFinishReport">
+		UPDATE SIGN_FINISH_REPORT 
+		SET SIGN_CODE = ${sign_state}, SIGN_DATE = SYSDATE
+		WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no} 
+			AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO = ${report_no})
+	</update>
+	
+	
+	
+	<!-- sign_finish_report에 그 다음 결재자 insert 하기 -->
+	<insert id="insertSignFinishReport">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${sign_emp_no}
+			, 1
+			, ${report_no}
+			, null
+			, 3
+			, (SELECT RETURN_NO FROM SIGN_FINISH_REPORT
+				WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no} 
+				AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO = ${report_no}))
+		)
+	</insert>
+	
+	
+	<!-- ================= -->
+	<update id="updateSignFinishReport_Boryu">
+		update sign_finish_report
+		set  sign_code=${sign_state} , sign_date = sysdate
+		where report_code=1 and report_no=${report_no} and emp_no=${loginemp_no} and return_no = (select revise_cnt from expense_report where report_no=${report_no})
+	</update>
+	
+	
+	<update id="updateExpenseReport">
+		UPDATE EXPENSE_REPORT
+		SET REVISE_CNT = REVISE_CNT + 1
+		WHERE REPORT_NO=${report_no}
+	</update>
+	
+	
+	<select id='getReturn_emp_no' parameterType="com.report.ware.ExpenseDTO" resultType="String">
+		SELECT EMP_NO||'' AS EMP_NO
+		FROM SIGN_FINISH_REPORT
+		WHERE REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT-1 FROM EXPENSE_REPORT WHERE REPORT_NO=${report_no}) AND REPORT_CODE = 1
+	</select>
+	
+	<insert id="insertSignFinishReport_many">
+		INSERT ALL	
+			<foreach item="return_emp_no" collection="return_emp_no" index="idx" >
+				INTO SIGN_FINISH_REPORT 
+				VALUES
+				(
+					(SELECT NVL(MAX(SIGN_FINISH_NO),0)+${idx}+1 FROM SIGN_FINISH_REPORT)
+					, ${return_emp_no}
+					, 1
+					, ${report_no}
+					, sysdate
+					, 4
+					, (SELECT MAX(RETURN_NO)+1 FROM SIGN_FINISH_REPORT WHERE REPORT_NO=${report_no} AND REPORT_CODE = 1)
+				)
+			</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+	
+	<insert id="insertSignFinishReport_many_finish">
+		INSERT ALL	
+			<foreach item="return_emp_no" collection="return_emp_no" index="idx" >
+				INTO SIGN_FINISH_REPORT 
+				VALUES
+				(
+					(SELECT NVL(MAX(SIGN_FINISH_NO),0)+${idx}+1 FROM SIGN_FINISH_REPORT)
+					, ${return_emp_no}
+					, 1
+					, ${report_no}
+					, sysdate
+					, 2
+					, (SELECT MAX(RETURN_NO)+1 FROM SIGN_FINISH_REPORT WHERE REPORT_NO=${report_no} AND REPORT_CODE = 1)
+				)
+			</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+	
+	<insert id="insertReturnReport">
+		INSERT INTO RETURN_REPORT
+		VALUES (
+			(SELECT SIGN_FINISH_NO FROM SIGN_FINISH_REPORT
+			 WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no}
+			         AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO = ${report_no}))
+			, #{return_reason}
+		)
+	</insert>
+	
+	<update id="updateNextSignFinishReport">
+		UPDATE SIGN_FINISH_REPORT
+		SET SIGN_CODE = 3, SIGN_DATE = NULL
+		WHERE REPORT_CODE = 1 AND REPORT_NO=${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO = ${report_no})
+			AND EMP_NO =#{sign_emp_no}
+	</update>
+	
+	
+	<select id="pickNextEmployee" resultType="java.util.HashMap">
+		SELECT * 
+		FROM ( SELECT ZZZ.*,ROWNUM RNUM 
+					FROM(
+						SELECT
+							DISTINCT EMP_NO||'' AS EMP_NO	
+							, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+							, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+							, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+							, SIGN_CODE||'' AS SIGN_NAME
+						FROM SIGN_FINISH_REPORT SFR
+						WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO=${report_no})
+						ORDER BY DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+						) ZZZ 
+			) 
+		WHERE RNUM = (
+						SELECT RNUM+1 
+						FROM ( 
+							SELECT ZZZ.*,ROWNUM RNUM 
+							FROM(
+								SELECT
+									DISTINCT EMP_NO||'' AS EMP_NO	
+									, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+									, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+									, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+								FROM SIGN_FINISH_REPORT SFR
+								WHERE REPORT_CODE = 1 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO=${report_no})
+								ORDER BY DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+								)ZZZ 
+			) WHERE EMP_NO=${loginemp_no} )
+	</select>
+
+</mapper>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.report.ware.DashboardDAO">
+	<select id="getDailyStatList" resultType="java.util.HashMap">
+		SELECT 
+			M.MONTH AS MONTH
+			, (SELECT COUNT(*) FROM SIGN_FINISH_REPORT SFR 
+				WHERE (REPORT_CODE = 3
+				<if test="loginemp_no != null and loginemp_no != 1">
+					 AND EMP_NO = ${loginemp_no} 
+				</if>
+				 AND SIGN_CODE = 1 AND TO_CHAR(SIGN_DATE,'YYYY') = #{mySignCount_year} AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2)||'월' = M.MONTH)
+				 OR REPORT_CODE = 3	
+				<if test="loginemp_no != null and loginemp_no != 1">
+					 AND EMP_NO = ${loginemp_no} 
+				</if>
+				AND SIGN_CODE = 2 AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = SFR.REPORT_NO) AND TO_CHAR(SIGN_DATE,'YYYY') = #{mySignCount_year} AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2)||'월' = M.MONTH) AS COUNT
+		FROM
+			( 
+			SELECT '01월' AS "MONTH" FROM DUAL UNION
+			SELECT '02월' AS "MONTH" FROM DUAL UNION
+			SELECT '03월' AS "MONTH" FROM DUAL UNION
+			SELECT '04월' AS "MONTH" FROM DUAL UNION
+			SELECT '05월' AS "MONTH" FROM DUAL UNION
+			SELECT '06월' AS "MONTH" FROM DUAL UNION
+			SELECT '07월' AS "MONTH" FROM DUAL UNION
+			SELECT '08월' AS "MONTH" FROM DUAL UNION
+			SELECT '09월' AS "MONTH" FROM DUAL UNION
+			SELECT '10월' AS "MONTH" FROM DUAL UNION
+			SELECT '11월' AS "MONTH" FROM DUAL UNION
+			SELECT '12월' AS "MONTH" FROM DUAL 
+			) M
+	</select>
+	
+	<select id="getSaleStatList" resultType="java.util.HashMap">
+		SELECT 
+			M.MONTH AS MONTH
+			, (SELECT COUNT(*) FROM SIGN_FINISH_REPORT SFR 
+				WHERE (REPORT_CODE = 2
+				<if test="loginemp_no != null and loginemp_no != 1">
+					 AND EMP_NO = ${loginemp_no} 
+				</if>
+				AND SIGN_CODE = 1 AND TO_CHAR(SIGN_DATE,'YYYY') = #{mySignCount_year} AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2)||'월' = M.MONTH)
+				 OR REPORT_CODE = 2 
+				 <if test="loginemp_no != null and loginemp_no != 1">
+					 AND EMP_NO = ${loginemp_no} 
+				</if> 
+				 AND SIGN_CODE = 2 AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = SFR.REPORT_NO) AND TO_CHAR(SIGN_DATE,'YYYY') = #{mySignCount_year} AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2)||'월' = M.MONTH) AS COUNT
+		FROM
+			( 
+			SELECT '01월' AS "MONTH" FROM DUAL UNION
+			SELECT '02월' AS "MONTH" FROM DUAL UNION
+			SELECT '03월' AS "MONTH" FROM DUAL UNION
+			SELECT '04월' AS "MONTH" FROM DUAL UNION
+			SELECT '05월' AS "MONTH" FROM DUAL UNION
+			SELECT '06월' AS "MONTH" FROM DUAL UNION
+			SELECT '07월' AS "MONTH" FROM DUAL UNION
+			SELECT '08월' AS "MONTH" FROM DUAL UNION
+			SELECT '09월' AS "MONTH" FROM DUAL UNION
+			SELECT '10월' AS "MONTH" FROM DUAL UNION
+			SELECT '11월' AS "MONTH" FROM DUAL UNION
+			SELECT '12월' AS "MONTH" FROM DUAL 
+			) M
+	</select>
+	
+	<select id="getExpenseStatList" resultType="java.util.HashMap">
+		SELECT 
+			M.MONTH AS MONTH
+			, (SELECT COUNT(*) FROM SIGN_FINISH_REPORT SFR 
+				WHERE (REPORT_CODE = 1
+				<if test="loginemp_no != null and loginemp_no != 1">
+					 AND EMP_NO = ${loginemp_no} 
+				</if>
+				AND SIGN_CODE = 1 AND TO_CHAR(SIGN_DATE,'YYYY') = #{mySignCount_year} AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2)||'월' = M.MONTH)
+				 OR REPORT_CODE = 1 
+				 <if test="loginemp_no != null and loginemp_no != 1">
+					 AND EMP_NO = ${loginemp_no} 
+				</if>
+				 AND SIGN_CODE = 2 AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = SFR.REPORT_NO) AND TO_CHAR(SIGN_DATE,'YYYY') = #{mySignCount_year} AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2)||'월' = M.MONTH) AS COUNT
+		FROM
+			( 
+			SELECT '01월' AS "MONTH" FROM DUAL UNION
+			SELECT '02월' AS "MONTH" FROM DUAL UNION
+			SELECT '03월' AS "MONTH" FROM DUAL UNION
+			SELECT '04월' AS "MONTH" FROM DUAL UNION
+			SELECT '05월' AS "MONTH" FROM DUAL UNION
+			SELECT '06월' AS "MONTH" FROM DUAL UNION
+			SELECT '07월' AS "MONTH" FROM DUAL UNION
+			SELECT '08월' AS "MONTH" FROM DUAL UNION
+			SELECT '09월' AS "MONTH" FROM DUAL UNION
+			SELECT '10월' AS "MONTH" FROM DUAL UNION
+			SELECT '11월' AS "MONTH" FROM DUAL UNION
+			SELECT '12월' AS "MONTH" FROM DUAL 
+			) M
+	</select>
+	
+	<select id="getRoundExpenseStatList" resultType="java.util.HashMap">
+		SELECT 
+			FN.FIELD_NAME AS NAME
+			, (SELECT COUNT(*) FROM EXPENSE_REPORT ER WHERE 
+			<!-- , NVL((SELECT SUM(EXPENSE_PRICE) FROM EXPENSE_REPORT ER WHERE  -->
+			<if test="loginemp_no != null and loginemp_no != 1">
+				EMP_NO = ${loginemp_no} AND 
+			</if>
+			TO_CHAR(EXPENSE_DATE,'YYYY') = #{roundStat_year} AND (SELECT EXPENSE_FIELD_NAME FROM CODE_EXPENSE_FIELD WHERE EXPENSE_FIELD_CODE = ER.EXPENSE_FIELD_CODE) = FN.FIELD_NAME) AS COUNT
+		FROM
+			( 
+			SELECT '식대' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '회식비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '접대비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '비품' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '기자재' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '사무가구' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '교통비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '경조사비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '숙박비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '의류비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '도서비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '홍보비' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '기타' AS "FIELD_NAME" FROM DUAL 
+			) FN
+		ORDER BY DECODE(NAME,'식대',1,'회식비',2,'접대비',3,'비품',4,'기자재',5,'사무가구',6,'교통비',7,'경조사비',8,'숙박비',9,'의류비',10,'도서비',11,'홍보비',12,'기타',13)
+	</select>
+	
+	<select id="getRoundSalesStatList" resultType="java.util.HashMap">
+		SELECT 
+			FN.FIELD_NAME AS NAME
+			, (SELECT COUNT(*) FROM SALES_REPORT SR WHERE 
+			<if test="loginemp_no != null and loginemp_no != 1">
+				EMP_NO = ${loginemp_no} AND 
+			</if>
+			TO_CHAR(SALES_DATE_START,'YYYY') = #{roundStat_year} AND (SELECT SALES_TYPE_NAME FROM CODE_SALES_TYPE WHERE SALES_TYPE_CODE = SR.SALES_TYPE_CODE) = FN.FIELD_NAME) AS COUNT
+		FROM
+			( 
+			SELECT '영업지관리' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '수금' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '회의' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '거래처확보' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '기타' AS "FIELD_NAME" FROM DUAL
+			) FN
+		ORDER BY DECODE(NAME,'영업지관리',1,'수금',2,'회의',3,'거래처확보',4,'기타',5)
+	</select>
+	
+	<select id="getRoundDailyStatList" resultType="java.util.HashMap">
+		SELECT 
+			FN.FIELD_NAME AS NAME
+			, (SELECT COUNT(*) FROM DAILY_REPORT DR WHERE 
+			<if test="loginemp_no != null and loginemp_no != 1">
+				EMP_NO = ${loginemp_no} AND 
+			</if>
+			TO_CHAR(BUSI_START_DATE,'YYYY') = #{roundStat_year} AND (SELECT BUSI_TYPE_NAME FROM CODE_BUSINESS_TYPE WHERE BUSI_TYPE_CODE = DR.BUSI_TYPE_CODE) = FN.FIELD_NAME) AS COUNT
+		FROM
+			( 
+			SELECT '행정' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '사무' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '구매' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '접대' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '회계' AS "FIELD_NAME" FROM DUAL UNION
+			SELECT '기타' AS "FIELD_NAME" FROM DUAL
+			) FN
+		ORDER BY DECODE(NAME,'행정',1,'사무',2,'구매',3,'접대',4,'회계',5,'기타',6)
+	</select>
+	
+	<!-- ====================================================== -->    
+	<select id="getDailySignList" resultType="java.util.HashMap">
+		SELECT 
+			ZZZ.SIGN_CODE AS SIGN_CODE
+			<if test="loginemp_no != null and loginemp_no == 1">
+				, (SELECT COUNT(DISTINCT(REPORT_NO)) FROM SIGN_FINISH_REPORT SFR WHERE REPORT_CODE = 3 
+			</if>
+			<if test="loginemp_no != null and loginemp_no != 1">
+				, (SELECT COUNT(*) FROM SIGN_FINISH_REPORT SFR WHERE REPORT_CODE = 3
+			</if>
+			<if test="loginemp_no != null and loginemp_no != 1">
+				AND EMP_NO = ${loginemp_no} 
+			</if>
+			AND SIGN_CODE=ZZZ.SIGN_CODE AND TO_CHAR(SIGN_DATE,'YYYY') = #{signCodeCnt_year} AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO=SFR.REPORT_NO)
+			<if test="signCodeCnt_month!=null and signCodeCnt_month.length()>0">
+			 AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2) = #{signCodeCnt_month} 
+			</if>) AS COUNT
+		FROM ( SELECT SIGN_CODE FROM CODE_SIGN ) ZZZ
+	</select>
+	
+	<select id="getSaleSignList" resultType="java.util.HashMap">
+		SELECT 
+			ZZZ.SIGN_CODE AS SIGN_CODE
+			<if test="loginemp_no != null and loginemp_no == 1">
+				, (SELECT COUNT(DISTINCT(REPORT_NO)) FROM SIGN_FINISH_REPORT SFR WHERE REPORT_CODE = 2 
+			</if>
+			<if test="loginemp_no != null and loginemp_no != 1">
+				, (SELECT COUNT(*) FROM SIGN_FINISH_REPORT SFR WHERE REPORT_CODE = 2 
+			</if>
+			<if test="loginemp_no != null and loginemp_no != 1">
+				AND EMP_NO = ${loginemp_no} 
+			</if>
+			AND SIGN_CODE=ZZZ.SIGN_CODE AND TO_CHAR(SIGN_DATE,'YYYY') = #{signCodeCnt_year} AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO=SFR.REPORT_NO)
+			<if test="signCodeCnt_month!=null and signCodeCnt_month.length()>0">
+			 AND SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2) = #{signCodeCnt_month}
+			</if>) AS COUNT
+		FROM ( SELECT SIGN_CODE FROM CODE_SIGN ) ZZZ
+	</select>
+	
+	<select id="getExpenseSignList" resultType="java.util.HashMap">
+		SELECT 
+			ZZZ.SIGN_CODE AS SIGN_CODE
+			<if test="loginemp_no != null and loginemp_no == 1">
+				, (SELECT COUNT(DISTINCT(REPORT_NO)) FROM SIGN_FINISH_REPORT SFR WHERE REPORT_CODE = 1
+			</if>
+			<if test="loginemp_no != null and loginemp_no != 1">
+				, (SELECT COUNT(*) FROM SIGN_FINISH_REPORT SFR WHERE REPORT_CODE = 1
+			</if>
+			<if test="loginemp_no != null and loginemp_no != 1">
+				AND EMP_NO = ${loginemp_no} 
+			</if>
+			AND SIGN_CODE=ZZZ.SIGN_CODE AND (TO_CHAR(SIGN_DATE,'YYYY') = #{signCodeCnt_year} OR TO_CHAR(SIGN_DATE,'YYYY') IS NULL) AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO=SFR.REPORT_NO)
+			<if test="signCodeCnt_month!=null and signCodeCnt_month.length()>0">
+			 AND ( SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2) = #{signCodeCnt_month} OR SUBSTR(TO_CHAR(SIGN_DATE,'YYYYMMDD'), 5, 2) IS NULL)
+			</if>
+			) AS COUNT
+		FROM ( SELECT SIGN_CODE FROM CODE_SIGN ) ZZZ
+	</select>
+	
+	<!-- ====================================================== -->
+	
+	<select id="getBeforSignList" resultType="java.util.HashMap">
+		(SELECT ZZZ.*,ROWNUM RNUM 
+      FROM(
+         SELECT
+            DISTINCT EMP_NO||'' AS EMP_NO
+            , LAG(EMP_NO) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_EMP_NO
+            , (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+            , LAG((SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_EMP_NAME
+            , (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+            , LAG((SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_DEP_NAME
+            , (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+            , LAG((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_JIKUP_NAME
+            , SIGN_CODE||'' AS SIGN_NAME
+            , LAG(SIGN_CODE) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_SIGN_CODE
+            , REPORT_CODE
+            , LAG(REPORT_CODE) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_REPORT_CODE
+            , (SELECT REPORT_NAME FROM CODE_REPORT WHERE REPORT_CODE = SFR.REPORT_CODE) AS REPORT_NAME
+            , LAG((SELECT REPORT_NAME FROM CODE_REPORT WHERE REPORT_CODE = SFR.REPORT_CODE)) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_REPORT_NAME
+            , REPORT_NO
+            , LAG(REPORT_NO) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_REPORT_NO
+            , RETURN_NO
+            , LAG(RETURN_NO) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_RETURN_NO
+            , SIGN_DATE
+            , LAG(SIGN_DATE) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_SIGN_DATE
+            , TO_CHAR(SIGN_DATE, 'YYYYMMDD HH24:MI:SS') AS SIGN_DATE2
+            , LAG(TO_CHAR(SIGN_DATE, 'YYYYMMDD HH24:MI:SS')) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_SIGN_DATE2
+            , TO_CHAR(SYSDATE, 'YYYYMMDD HH24:MI:SS') AS SYSDATE2
+            , LAG(TO_CHAR(SYSDATE, 'YYYYMMDD HH24:MI:SS')) OVER(ORDER BY REPORT_CODE, REPORT_NO, DECODE((SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)),'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)) AS PREV_SYSDATE2
+         FROM SIGN_FINISH_REPORT SFR 
+         WHERE REPORT_CODE = 3 AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO=SFR.REPORT_NO) OR (REPORT_CODE = 2 AND RETURN_NO = (SELECT REVISE_CNT FROM SALES_REPORT WHERE REPORT_NO=SFR.REPORT_NO)) OR (REPORT_CODE = 1 AND RETURN_NO = (SELECT REVISE_CNT FROM EXPENSE_REPORT WHERE REPORT_NO=SFR.REPORT_NO))
+          AND SIGN_DATE BETWEEN SYSDATE-7 AND SYSDATE
+         ORDER BY REPORT_CODE,REPORT_NO,DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+      ) ZZZ WHERE SIGN_NAME = 3 AND EMP_NO = ${loginemp_no} )
+      ORDER BY PREV_SIGN_DATE DESC
+	</select>
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.report.ware.JoinDAO">
+
+	<insert id="insertEmp">
+		INSERT INTO EMPLOYEE(EMP_NO,EMP_NAME,EMP_PWD,EMAIL,DEP_NO,JUMIN_NUM,PHONE_NUM,ALLOW_CODE)
+		VALUES (
+			<if test="dep_no==1">
+			(SELECT NVL(MAX(EMP_NO),999)+1 FROM EMPLOYEE WHERE DEP_NO=1)
+			</if>
+			<if test="dep_no==2">
+			(SELECT NVL(MAX(EMP_NO),1999)+1 FROM EMPLOYEE WHERE DEP_NO=2)
+			</if>
+			<if test="dep_no==3">
+			(SELECT NVL(MAX(EMP_NO),2999)+1 FROM EMPLOYEE WHERE DEP_NO=3)
+			</if>
+			<if test="dep_no==4">
+			(SELECT NVL(MAX(EMP_NO),3999)+1 FROM EMPLOYEE WHERE DEP_NO=4)
+			</if>
+			<if test="dep_no==5">
+			(SELECT NVL(MAX(EMP_NO),4999)+1 FROM EMPLOYEE WHERE DEP_NO=5)
+			</if>
+			<if test="dep_no==6">
+			(SELECT NVL(MAX(EMP_NO),5999)+1 FROM EMPLOYEE WHERE DEP_NO=6)
+			</if>
+			,#{emp_name}
+			,#{emp_pwd}
+			,#{email}
+			,${dep_no}
+			,#{jumin_num}
+			,#{phone_num}
+			,1
+		)
+	</insert>
+	
+	
+	<select id="getLginEmp_no" resultType="String">
+		SELECT 
+			EMP_NO
+		FROM EMPLOYEE
+		WHERE
+			EMP_NAME=#{emp_name}
+			AND EMP_PWD=#{emp_pwd}
+			AND EMAIL=#{email}
+			AND DEP_NO=${dep_no}
+			AND JUMIN_NUM=#{jumin_num}
+			AND PHONE_NUM=#{phone_num}
+	</select>
+
+</mapper>

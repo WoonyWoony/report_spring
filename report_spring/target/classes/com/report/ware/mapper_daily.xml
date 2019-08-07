@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.report.ware.DailyDAO">
+
+	<sql id="dailyWhere">
+		<if test="busi_date_min!=null and busi_date_min.length()>0 and busi_date_max!=null and busi_date_max.length()>0">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE TO_CHAR(BUSI_START_DATE,'YYYYMM') >= #{busi_date_min} AND TO_CHAR(BUSI_END_DATE,'YYYYMM') <= #{busi_date_max})
+				]]>
+			)
+		</if>
+		<if test="busi_date_min!=null and busi_date_min.length()>0 and (busi_date_max==null or busi_date_max.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE TO_CHAR(BUSI_START_DATE,'YYYYMM') >= #{busi_date_min})
+				]]>
+			)
+		</if>
+		
+		<if test="busi_date_max!=null and busi_date_max.length()>0 and (busi_date_min==null or busi_date_min.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE TO_CHAR(BUSI_START_DATE,'HH24MI') <= #{busi_time_max})
+				]]>
+			)
+		</if>
+		
+		
+		<if test="busi_hours_min!=null and busi_hours_min.length()>0 and busi_hours_max!=null and busi_hours_max.length()>0">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE TO_CHAR(BUSI_START_DATE,'HH24MI') >= #{busi_time_min} AND TO_CHAR(BUSI_END_DATE,'HH24MI') <= #{busi_time_max})
+				]]>
+			)
+		</if>
+		<if test="busi_hours_min!=null and busi_hours_min.length()>0 and (busi_hours_max==null or busi_hours_max.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE TO_CHAR(BUSI_START_DATE,'HH24MI') >= #{busi_time_min})
+				]]>
+			)
+		</if>
+		
+		<if test="busi_hours_max!=null and busi_hours_max.length()>0 and (busi_hours_min==null or busi_hours_min.length()==0)">
+			and 
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE TO_CHAR(BUSI_START_DATE,'HH24MI') <= #{busi_time_max})
+				]]>
+			)
+		</if>
+		
+		<if test="sign_state != null">
+			and (
+			<foreach collection="sign_state" item="sign_state" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					SIGN_CODE = ${sign_state}
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="busi_type_code != null">
+			and (
+			<foreach collection="busi_type_code" item="busi_type_code" index="idx">
+				<if test="idx > 0">
+					or 
+				</if>
+					REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE BUSI_TYPE_CODE=${busi_type_code})
+			</foreach> 
+			 ) 
+		</if>
+		
+		<if test="keyword != null and keyword.length()>0">
+			and 
+			(
+				EMP_NO IN (SELECT EMP_NO FROM EMPLOYEE WHERE UPPER(EMP_NAME) LIKE UPPER('%${keyword}%'))
+				OR REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE UPPER(BUSI_CONTENT) LIKE UPPER('%${keyword}%'))
+			)
+		</if>
+	</sql>
+	
+	
+	<select id='getDailyList' parameterType="com.report.ware.DailyBusiSearchDTO" resultType="java.util.HashMap" >
+	 	SELECT * FROM (SELECT ZZZ.*, ROWNUM RNUM FROM (
+		 	SELECT 
+				 REPORT_NO||'' AS REPORT_NO
+				, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = (SELECT EMP_NO FROM DAILY_REPORT WHERE REPORT_NO = SFR.REPORT_NO)) AS EMP_NAME
+				, (SELECT BUSI_TYPE_NAME FROM CODE_BUSINESS_TYPE WHERE BUSI_TYPE_CODE=(SELECT BUSI_TYPE_CODE FROM DAILY_REPORT WHERE REPORT_NO=SFR.REPORT_NO)) AS BUSI_TYPE_CODE
+				, (SELECT BUSI_CONTENT FROM DAILY_REPORT WHERE REPORT_NO=SFR.REPORT_NO) AS BUSI_CONTENT
+				, (SELECT SIGN_NAME FROM CODE_SIGN WHERE SIGN_CODE = SFR.SIGN_CODE ) AS SIGN_NAME
+				, TO_CHAR(SFR.SIGN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SIGN_DATE
+				, <![CDATA[ (SELECT TO_CHAR(BUSI_START_DATE,'YYYY-MM-DD HH24:MI DY','NLS_DATE_LANGUAGE=KOREAN') FROM DAILY_REPORT WHERE REPORT_NO=SFR.REPORT_NO)
+					||' ~ <br> '||(SELECT TO_CHAR(BUSI_END_DATE,'YYYY-MM-DD HH24:MI DY','NLS_DATE_LANGUAGE=KOREAN') FROM DAILY_REPORT WHERE REPORT_NO=SFR.REPORT_NO) ]]> AS BUSI_TIME
+				, REPORT_CODE||'' AS REPORT_CODE
+				, RETURN_NO||'' AS RETURN_NO
+				, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = (SELECT EMP_NO FROM DAILY_REPORT WHERE REPORT_NO = SFR.REPORT_NO))) AS EMP_JIKUP
+				, TO_CHAR(SFR.SIGN_DATE, 'YYYYMMDD HH24:MI:SS') AS SIGN_DATE2
+            	, TO_CHAR(SYSDATE, 'YYYYMMDD HH24:MI:SS') AS SYSDATE2
+			FROM SIGN_FINISH_REPORT SFR
+			WHERE EMP_NO = ${emp_no} AND REPORT_CODE = 3 AND REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE REVISE_CNT = SFR.RETURN_NO)
+			<include refid="dailyWhere"></include>
+			ORDER BY
+			<if test="sort != null and sort.length() > 0">
+				${sort} ${ascDesc},
+			</if>  
+			7 DESC
+			
+		)ZZZ) WHERE <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} AND RNUM <= ${selectPageNo * rowCntPerPage} ]]>
+	</select>
+	
+	<!-- *************************************************** -->
+	<!-- 게시판 검색 총 행의 개수 검색하는 select 문을 내포한 select 태그 선언 -->
+	<!-- *************************************************** -->
+	<select id='getDailyListAllCnt' parameterType="com.report.ware.DailyBusiSearchDTO" resultType="int" >
+		SELECT COUNT(*)
+		FROM SIGN_FINISH_REPORT SFR 
+		WHERE EMP_NO = ${emp_no} AND REPORT_CODE = 3 AND REPORT_NO IN (SELECT REPORT_NO FROM DAILY_REPORT WHERE REVISE_CNT = SFR.RETURN_NO)
+		<include refid="dailyWhere"></include>
+	</select>
+
+	
+	<insert id="first_insertDailyReport">
+		INSERT INTO DAILY_REPORT VALUES(
+			(SELECT NVL(MAX(REPORT_NO),0) + 1 FROM DAILY_REPORT)
+			, 3
+			, ${busi_type_code}
+			, TO_DATE(#{busi_start_date},'YYYYMMDDHH24MI')
+			, TO_DATE(#{busi_end_date},'YYYYMMDDHH24MI')
+			, #{busi_content}
+			, ${emp_no}
+			<if test="sign_state == 1">
+			, 0
+			</if>
+			<if test="sign_state == 4">
+			, 1
+			</if>
+		)
+	</insert>
+	
+	<insert id="first_insertSignFinishReport">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${emp_no}
+			, 3
+			, (SELECT MAX(REPORT_NO) FROM DAILY_REPORT)
+			, sysdate
+			, ${sign_state}
+			<if test="sign_state == 1">
+			, 0
+			</if>
+			<if test="sign_state == 4">
+			, 1
+			</if>
+		)
+	</insert>
+	
+	<insert id="first_insertSignFinishReport_Sign_emp">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${sign_emp_no}
+			, 3
+			, (SELECT MAX(REPORT_NO) FROM DAILY_REPORT)
+			, null
+			, 3
+			, 0
+		)
+	</insert>
+	
+	<insert id="first_insertReturnReport">
+		INSERT INTO RETURN_REPORT
+		VALUES (
+			(SELECT MAX(SIGN_FINISH_NO) FROM SIGN_FINISH_REPORT)
+			, #{return_reason}
+		)
+	</insert>
+	
+	
+	
+	<select id='getDailyDTO' parameterType="hashmap" resultType="com.report.ware.DailyBusiDTO">
+		SELECT 
+			(SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO=DR.EMP_NO) AS EMP_NAME
+			, REPORT_NO||'' AS REPORT_NO
+			, BUSI_TYPE_CODE||'' AS BUSI_TYPE_CODE
+			, BUSI_CONTENT
+			, TO_CHAR(BUSI_START_DATE,'YYYY-MM-DD DY AMHH:MI')||'~'||TO_CHAR(BUSI_END_DATE,'YYYY-MM-DD DY AMHH:MI') AS BUSI_DATE
+			, EMP_NO||'' AS EMP_NO
+			,(SELECT SIGN_CODE FROM SIGN_FINISH_REPORT WHERE REPORT_CODE = DR.REPORT_CODE AND REPORT_NO = DR.REPORT_NO AND EMP_NO = ${emp_no} AND RETURN_NO=${return_no}) AS SIGN_NAME
+			, TO_CHAR(BUSI_START_DATE,'YYYY') AS BUSI_YEAR_MIN
+			, TO_CHAR(BUSI_START_DATE,'MM') AS BUSI_MONTH_MIN
+			, TO_CHAR(BUSI_START_DATE,'DD') AS BUSI_DAY_MIN
+			, TO_CHAR(BUSI_START_DATE,'HH24') AS BUSI_HOURS_MIN
+			, TO_CHAR(BUSI_START_DATE,'MI') AS BUSI_MINUTES_MIN
+			, TO_CHAR(BUSI_END_DATE,'YYYY') AS BUSI_YEAR_MAX
+			, TO_CHAR(BUSI_END_DATE,'MM') AS BUSI_MONTH_MAX
+			, TO_CHAR(BUSI_END_DATE,'DD') AS BUSI_DAY_MAX
+			, TO_CHAR(BUSI_END_DATE,'HH24') AS BUSI_HOURS_MAX
+			, TO_CHAR(BUSI_END_DATE,'MI') AS BUSI_MINUTES_MAX
+		FROM DAILY_REPORT DR
+		WHERE REPORT_NO=${report_no}
+	</select>
+	
+	
+	<select id='getSignList' parameterType="hashmap" resultType="java.util.HashMap">
+		SELECT
+			(SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+			, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+			, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+			, (SELECT SIGN_NAME FROM CODE_SIGN WHERE SIGN_CODE = SFR.SIGN_CODE)||'' AS SIGN_NAME
+			, (SELECT RETURN_RESULT FROM RETURN_REPORT WHERE SFR_NO = SFR.SIGN_FINISH_NO)||'' AS RETURN_RESULT
+			, RETURN_NO||'' AS RETURN_NO
+			, EMP_NO||'' AS EMP_NO
+			, TO_CHAR(SIGN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SIGN_DATE
+		FROM SIGN_FINISH_REPORT SFR
+		WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no}
+		ORDER BY SIGN_FINISH_NO
+	</select>
+	
+	
+	<select id='getMax_return_no' parameterType="hashmap" resultType="int">
+		SELECT MAX(RETURN_NO) FROM SIGN_FINISH_REPORT WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no}
+	</select>
+	
+	
+	
+	<select id="pickNextEmployee" resultType="java.util.HashMap">
+		SELECT * 
+		FROM ( SELECT ZZZ.*,ROWNUM RNUM 
+					FROM(
+						SELECT
+							DISTINCT EMP_NO||'' AS EMP_NO	
+							, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+							, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+							, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+							, SIGN_CODE||'' AS SIGN_NAME
+						FROM SIGN_FINISH_REPORT SFR
+						WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO=${report_no})
+						ORDER BY DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+						) ZZZ 
+			) 
+		WHERE RNUM = (
+						SELECT RNUM+1 
+						FROM ( 
+							SELECT ZZZ.*,ROWNUM RNUM 
+							FROM(
+								SELECT
+									DISTINCT EMP_NO||'' AS EMP_NO	
+									, (SELECT EMP_NAME FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO)||'' AS EMP_NAME
+									, (SELECT DEP_NAME FROM CODE_DEPT WHERE DEP_NO = (SELECT DEP_NO FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS DEP_NAME
+									, (SELECT JIKUP_NAME FROM CODE_JIKUP WHERE JIKUP_CODE = (SELECT JIKUP_CODE FROM EMPLOYEE WHERE EMP_NO = SFR.EMP_NO))||'' AS JIKUP_NAME
+								FROM SIGN_FINISH_REPORT SFR
+								WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO=${report_no})
+								ORDER BY DECODE(JIKUP_NAME,'사원',1,'대리',2,'팀장',3,'과장',4,'부장',5,'사장',6)
+								)ZZZ 
+			) WHERE EMP_NO=${loginemp_no} )
+	</select>
+	
+	<!-- update 보고서 내용물 -->
+	<update id="updateDailyReport_inside">
+		UPDATE DAILY_REPORT
+		SET 
+			BUSI_TYPE_CODE = ${busi_type_code}
+			, BUSI_START_DATE = TO_DATE(#{busi_start_date},'YYYYMMDDHH24MI')
+			, BUSI_END_DATE = TO_DATE(#{busi_end_date},'YYYYMMDDHH24MI')
+			, BUSI_CONTENT = #{busi_content}
+		WHERE REPORT_NO=${report_no}
+	</update>
+	
+	<!-- SIGN_FINISH_REPORT 의  record_code = 1 , record_no = 지금 들어온 값 , emp_no == 결재누른사람emp_no 인 행 SIGN_CODE update 하기 -->
+	<update id="updateSignFinishReport">
+		UPDATE SIGN_FINISH_REPORT 
+		SET SIGN_CODE = ${sign_state}, SIGN_DATE = SYSDATE
+		WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no} 
+			AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = ${report_no})
+	</update>
+	
+	
+	
+	<!-- sign_finish_report에 그 다음 결재자 insert 하기 -->
+	<insert id="insertSignFinishReport">
+		INSERT INTO SIGN_FINISH_REPORT
+		VALUES (
+			(SELECT NVL(MAX(SIGN_FINISH_NO),0) + 1 FROM SIGN_FINISH_REPORT)
+			, ${sign_emp_no}
+			, 3
+			, ${report_no}
+			, null
+			, 3
+			, (SELECT RETURN_NO FROM SIGN_FINISH_REPORT
+				WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no} 
+				AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = ${report_no}))
+		)
+	</insert>
+	
+	
+	<!-- ================= -->
+	<update id="updateSignFinishReport_Boryu">
+		update sign_finish_report
+		set  sign_code=${sign_state} , sign_date = sysdate
+		where report_code=3 and report_no=${report_no} and emp_no=${loginemp_no} and return_no = (select revise_cnt from daily_report where report_no=${report_no})
+	</update>
+	
+	
+	<update id="updateDailyReport">
+		UPDATE DAILY_REPORT
+		SET REVISE_CNT = REVISE_CNT + 1
+		WHERE REPORT_NO=${report_no}
+	</update>
+	
+	
+	<select id='getReturn_emp_no' parameterType="com.report.ware.DailyBusiDTO" resultType="String">
+		SELECT EMP_NO||'' AS EMP_NO
+		FROM SIGN_FINISH_REPORT
+		WHERE REPORT_NO = ${report_no} AND RETURN_NO = (SELECT REVISE_CNT-1 FROM DAILY_REPORT WHERE REPORT_NO=${report_no}) AND REPORT_CODE = 3
+	</select>
+	
+	<insert id="insertSignFinishReport_many">
+		INSERT ALL	
+			<foreach item="return_emp_no" collection="return_emp_no" index="idx" >
+				INTO SIGN_FINISH_REPORT 
+				VALUES
+				(
+					(SELECT NVL(MAX(SIGN_FINISH_NO),0)+${idx}+1 FROM SIGN_FINISH_REPORT)
+					, ${return_emp_no}
+					, 3
+					, ${report_no}
+					, sysdate
+					, 4
+					, (SELECT MAX(RETURN_NO)+1 FROM SIGN_FINISH_REPORT WHERE REPORT_NO=${report_no} AND REPORT_CODE = 3)
+				)
+			</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+	
+	<insert id="insertSignFinishReport_many_finish">
+		INSERT ALL	
+			<foreach item="return_emp_no" collection="return_emp_no" index="idx" >
+				INTO SIGN_FINISH_REPORT 
+				VALUES
+				(
+					(SELECT NVL(MAX(SIGN_FINISH_NO),0)+${idx}+1 FROM SIGN_FINISH_REPORT)
+					, ${return_emp_no}
+					, 3
+					, ${report_no}
+					, sysdate
+					, 2
+					, (SELECT MAX(RETURN_NO)+1 FROM SIGN_FINISH_REPORT WHERE REPORT_NO=${report_no} AND REPORT_CODE = 3)
+				)
+			</foreach>
+		SELECT 1 FROM DUAL
+	</insert>
+	
+	<insert id="insertReturnReport">
+		INSERT INTO RETURN_REPORT
+		VALUES (
+			(SELECT SIGN_FINISH_NO FROM SIGN_FINISH_REPORT
+			 WHERE REPORT_CODE = 3 AND REPORT_NO = ${report_no} AND EMP_NO = ${loginemp_no}
+			         AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = ${report_no}))
+			, #{return_reason}
+		)
+	</insert>
+	
+	<update id="updateNextSignFinishReport">
+		UPDATE SIGN_FINISH_REPORT
+		SET SIGN_CODE = 3, SIGN_DATE = NULL
+		WHERE REPORT_CODE = 3 AND REPORT_NO=${report_no} AND RETURN_NO = (SELECT REVISE_CNT FROM DAILY_REPORT WHERE REPORT_NO = ${report_no})
+			AND EMP_NO =#{sign_emp_no}
+	</update>
+	
+	
+</mapper>
