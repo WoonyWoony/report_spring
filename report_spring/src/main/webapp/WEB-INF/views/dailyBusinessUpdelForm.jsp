@@ -51,6 +51,8 @@
 				} else {
 					$("#payment_button").hide();
 					$("#today").attr('href', '#');
+					$(".radiotr").hide();
+					$(".nextselecttr").hide();
 					$("#donotpayment").text("반려되어 수정이 불가능합니다.");
 				}
 			} else if ("${dailyBusiDTO.sign_name}" == "1" && "${pickNextEmp.SIGN_NAME}" == "3") {
@@ -69,15 +71,21 @@
 				} else{
 					$("#payment_button").hide();
 					$("#today").attr('href', '#');
+					$(".radiotr").hide();
+					$(".nextselecttr").hide();
 					$("#donotpayment").text("결재되어 수정이 불가능합니다.");
 				}
 			} else if ("${dailyBusiDTO.sign_name}" == "1" && "${pickNextEmp.SIGN_NAME}" != "3") {
 				$("#payment_button").hide();
 				$("#today").attr('href', '#');
+				$(".radiotr").hide();
+				$(".nextselecttr").hide();
 				$("#donotpayment").text("결재되어 수정이 불가능합니다.");
 			} else if ("${dailyBusiDTO.sign_name}" == "2") {
 				$("#payment_button").hide();
 				$("#today").attr('href', '#');
+				$(".radiotr").hide();
+				$(".nextselecttr").hide();
                 $("#donotpayment").text("결재 최종 완료된 보고서입니다.");
 			}
 
@@ -891,7 +899,7 @@
 									<span id="busi_date2" name="busi_date2"></span>
 								</td>
 							</tr>
-							<tr>
+							<tr class="radiotr">
 								<th bgcolor="#486177">결재/반려</th>
 								<td>
 									<input type="radio" id="sign_state" name="sign_state" value="1" onclick="hideBoryu_reason();">결재
@@ -902,7 +910,7 @@
 									</span>
 								</td>
 							</tr>
-							<tr>
+							<tr class="nextselecttr">
 								<th bgcolor="#486177">다음 결재자</th>
 								<td>
 									<select name="sign_emp_no" class="custom-select tm-select-accounts"

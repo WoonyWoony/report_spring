@@ -49,7 +49,9 @@
                         $("#setToday").removeAttr("hidden");
                     } else {
                         $("#payment_button").hide();
-                        $("#donotpayment").text("반려된 보고서입니다.");
+                        $(".radiotr").hide();
+        				$(".nextselecttr").hide();
+                        $("#donotpayment").text("반려되어 수정이 불가능합니다.");
                     }
                 } else if ("${salesDTO.sign_name}" == "1" && "${pickNextEmp.SIGN_NAME}" == "3") {
                     if ("${salesDTO.emp_no}" == "${sessionScope.emp_no}") {
@@ -66,13 +68,19 @@
                     } else {
                         $("#payment_button").hide();
                         $("#today").attr('href', '#');
+                        $(".radiotr").hide();
+        				$(".nextselecttr").hide();
                         $("#donotpayment").text("결재되어 수정이 불가능합니다.");
                     }
                 } else if ("${salesDTO.sign_name}" == "1" && "${pickNextEmp.SIGN_NAME}" != "3") {
                     $("#payment_button").hide();
+                    $(".radiotr").hide();
+    				$(".nextselecttr").hide();
                     $("#donotpayment").text("결재 되어 수정이 불가능합니다.");
                 } else if ("${salesDTO.sign_name}" == "2") {
                     $("#payment_button").hide();
+                    $(".radiotr").hide();
+    				$(".nextselecttr").hide();
                     $("#donotpayment").text("결재 최종 완료된 보고서입니다.");
                 }
 
@@ -1043,7 +1051,7 @@
                                         readonly>${salesDTO.sales_result}</textarea>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr class="radiotr">
                                 <th bgcolor="#486177">결재/반려</th>
                                 <td>
                                     <input type="radio" id="sign_state" name="sign_state" value="1" onclick="hideBoryu_reason();">결재
@@ -1055,7 +1063,7 @@
                                 </td>
                             </tr>
 
-                            <tr>
+                            <tr class="nextselecttr">
                                 <th bgcolor="#486177">다음 결재자</th>
                                 <td>
                                     <select name="sign_emp_no" class="custom-select tm-select-accounts"
