@@ -9,7 +9,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>헬로웍스 - 지출보고서</title>
+	<title>Product Admin - Dashboard HTML Template</title>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
 	<!-- https://fonts.google.com/specimen/Roboto -->
 	<link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css">
@@ -454,6 +454,29 @@
 				}
 			}
 		}
+		            
+		function setSearch(){       
+			inputData("sign_year_min", "2019");
+			inputData("sign_month_min", "03");
+			inputData("sign_year_max", "2019");
+			inputData("sign_month_max", "08");
+			inputData("expense_year_min", "2019");
+			inputData("expense_month_min", "02");
+			inputData("expense_year_max", "2019");
+			inputData("expense_month_max", "08");
+			inputData("expense_method", "1");
+			inputData("expense_method", "3");
+			inputData("expense_field", "1");
+			inputData("expense_field", "2");
+			inputData("expense_field", "4");
+			inputData("expense_field", "6");
+			inputData("expense_field", "13");
+			inputData("expense_price_min", "30000");
+			inputData("expense_price_max", "250000");
+			inputData("sign_state", "2");
+			inputData("sign_state", "4");
+			inputData("keyword", "인사부");
+		}
 	</script>
 </head>
 
@@ -776,6 +799,15 @@
 										<button style="max-width: 80px;"
 											class="btn btn-small btn-primary btn-block text-uppercase">
 											초기화
+										</button>
+									</span>
+								</td>
+								<td width=10></td>
+								<td>
+									<span tyle="cursor: pointer;" onclick="setSearch();">
+										<button style="max-width: 80px;"
+											class="btn btn-small btn-primary btn-block text-uppercase">
+											조건입력
 										</button>
 									</span>
 								</td>

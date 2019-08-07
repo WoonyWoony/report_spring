@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>헬로웍스 - 일일보고서</title>
+	<title>Product Admin - Dashboard HTML Template</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
     <!-- https://fonts.google.com/specimen/Roboto -->
     <link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css">
@@ -473,6 +473,15 @@
             });
         }
 
+        function setting(){
+                 
+			inputData("busi_type_code", "2");
+			inputData("busi_content", "고객정보관리");
+            inputData("sign_emp_no", "1001");
+            getToday('busi_year_min','busi_month_min','busi_day_min','busi_hours_min','busi_minutes_min','busi_year_max','busi_month_max','busi_day_max','busi_hours_max','busi_minutes_max');
+            
+        }
+
     </script>
 </head>
 
@@ -812,6 +821,14 @@
                                         <button style="max-width: 80px;"
                                             class="btn btn-small btn-primary btn-block text-uppercase">
                                             초기화
+                                        </button>
+                                    </span>
+                                <td width=5></td>
+                                <td>
+                                    <span tyle="cursor: pointer;" onclick="setting();">
+                                        <button style="max-width: 80px;"
+                                            class="btn btn-small btn-primary btn-block text-uppercase">
+                                            입력
                                         </button>
                                     </span>
                         </table>

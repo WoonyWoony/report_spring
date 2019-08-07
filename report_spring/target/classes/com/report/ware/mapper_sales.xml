@@ -77,7 +77,7 @@
 		<if test="keyword != null and keyword.length()>0">
 			and 
 			(
-				REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE UPPER(REPORT_NAME) LIKE UPPER('%${keyword}%'))
+				REPORT_NO IN (SELECT REPORT_NO FROM SALES_REPORT WHERE UPPER(REPORT_NAME) LIKE UPPER('%${keyword}%') OR UPPER(SALES_CONTENT) LIKE UPPER('%${keyword}%') OR UPPER(SALES_RESULT) LIKE UPPER('%${keyword}%'))
 		  		OR EMP_NO IN (SELECT EMP_NO FROM EMPLOYEE WHERE UPPER(EMP_NAME) LIKE UPPER('%${keyword}%'))
 			)
 		</if>

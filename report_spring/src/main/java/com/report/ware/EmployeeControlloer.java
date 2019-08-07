@@ -191,7 +191,7 @@ public class EmployeeControlloer {
 	// ------------------------------------------------------------
 	@RequestMapping(value = "/employeeRegProc.do", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public int insertEmployee(HttpSession session,EmployeeDTO employeeDTO,@RequestParam(value = "empRegCheck") String empRegCheck) {
+	public Object insertEmployee(HttpSession session,EmployeeDTO employeeDTO,@RequestParam(value = "empRegCheck") String empRegCheck) {
 		int employeeRegCnt = 0;
 		System.out.println("employeeRegProc에서 empRegCheck --"+empRegCheck);
 		try {
@@ -209,9 +209,6 @@ public class EmployeeControlloer {
 				employeeRegCnt = this.employeeService.getMgrEmployeeCnt(employeeDTO);
 				//session.setAttribute("mgrEmployeeCnt", employeeRegCnt);
 			}				
-			
-			
-			
 		} catch (Exception ex) {
 			System.out.println("employeeController.insertEmployee(~) 메소드 호출 시 에러발생");
 		}

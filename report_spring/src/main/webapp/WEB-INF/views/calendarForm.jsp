@@ -20,7 +20,7 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>헬로웍스 - 일정관리</title>
+	<title>Accounts - Product Admin Template</title>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
 	<!-- https://fonts.google.com/specimen/Roboto -->
 	<link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css">
@@ -154,6 +154,10 @@
 			htmlsContents += "</form>";
 			htmlsContents += "</div>";
 			openPopup("", htmlsContents, 360);
+			
+			inputData("calendar_title", "거래처목록 정리");
+			inputData("calendar_start_date", "2019-08-22");
+			inputData("calendar_end_date", "2019-08-23");
 		}
 
 		function openPopup(subject, contents, widths) {

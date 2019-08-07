@@ -15,7 +15,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>헬로웍스 - 일일보고서</title>
+	<title>Product Admin - Dashboard HTML Template</title>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
 	<!-- https://fonts.google.com/specimen/Roboto -->
 	<link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css">
@@ -342,6 +342,21 @@
 			}
 		}
 
+		function setSearch(){       
+			inputData("busi_year_min", "2019");
+			inputData("busi_month_min", "06");
+			inputData("busi_year_max", "2019");
+			inputData("busi_month_max", "08");
+			inputData("busi_hours_min", "10");
+			inputData("busi_minutes_min", "00");
+			inputData("busi_hours_max", "15");
+			inputData("busi_minutes_max", "30");
+			inputData("busi_type_code", "1");
+			inputData("busi_type_code", "2");
+			inputData("sign_state", "2");
+			inputData("keyword", "회의");
+		}
+
 	</script>
 
 </head>
@@ -612,6 +627,15 @@
 										<button style="max-width: 80px;"
 											class="btn btn-small btn-primary btn-block text-uppercase">
 											초기화
+										</button>
+									</span>
+								</td>
+								<td width=10></td>
+								<td>
+									<span tyle="cursor: pointer;" onclick="setSearch();">
+										<button style="max-width: 80px;"
+											class="btn btn-small btn-primary btn-block text-uppercase">
+											조건입력
 										</button>
 									</span>
 								</td>

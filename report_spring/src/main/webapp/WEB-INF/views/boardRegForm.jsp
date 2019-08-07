@@ -11,7 +11,7 @@
    <meta charset="UTF-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-   <title>헬로웍스 - 공지사항</title>
+   <title>Accounts - Product Admin Template</title>
    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
    <!-- https://fonts.google.com/specimen/Roboto -->
    <link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css">
@@ -82,6 +82,11 @@
       //**************************************************************
       function goBoardUpDelForm() {
          document.boardUpDelForm.submit();
+      }
+          
+      function setting(){
+			inputData("subject", "2018년 APM 시장매출 272억원 기록..헬로웍스 시장점유율 1위 차지");
+         CKEDITOR.instances.content.setData('지난해 헬로웍스가 APM 시장서 점유율 1위로 시장을 선도했다. 또한 침체기를 맞았던 EUE(엔드유저경험) 시장이 지난해 도약했다.  데일리그리드(DailyGrid)의 리서치센터가 2018년 3월 5일부터 4월 10일까지 기업 및 공공기관을 대상으로 방문, 전화, 설문 등을 통해 APM 시장 조사를 실시했다. 조사결과 WAS 모니터링, EUM 매출을 모두 포함한 2016년 전체 APM 시장은 272억원으로, 2015년 총매출인 256억원 대비 6.2% 증가했다.');
       }
    </script>
 </head>
@@ -210,6 +215,14 @@
                               <span style="cursor: pointer" onclick="document.goBoardListForm.submit();">
                                  <button style="min-width: 100px;" height=30 class="btn btn-small btn-primary btn-block text-uppercase">
                                     화면 닫기
+                                 </button>
+                              </span>
+                           </td>
+                           <td width=20></td>
+                           <td>
+                              <span style="cursor: pointer" onclick="setting();">
+                                 <button style="min-width: 80px;" height=30 class="btn btn-small btn-primary btn-block text-uppercase">
+                                    입력
                                  </button>
                               </span>
                            </td>

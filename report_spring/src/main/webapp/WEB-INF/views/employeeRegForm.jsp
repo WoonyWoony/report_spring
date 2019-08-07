@@ -237,6 +237,7 @@
 							if (mgrEmployeeCnt > 0) {
 								alert("직속상관후보가 존재합니다.");
 								$("[name=empRegCheck]").val('no');
+								//$("[name=mgr_emp_no]").find(':first-child').text("직속상관을 선택하지 않습니다");
 								document.employeeRegForm.submit();
 							}
 							else if (a != "" && b != "") {
@@ -248,6 +249,13 @@
 							alert("서버 접속 실패!");
 						}
 					});
+				}
+				if (a == "" && b =="") {
+					// alert($("[name=mgr_emp_no]").find(':first-child'));
+					$("[name=mgr_emp_no]").find(':first-child').text("해당하는 직원이없습니다");
+					$("[name=mgr_emp_no]").find(':first-child').siblings().remove();
+					
+										
 				}
 			}
 		}
@@ -417,8 +425,7 @@
 						<div class="form-group col-lg-6">
 							<label for="mgr_emp_no">직속상관</label>
 							<select name="mgr_emp_no" class="custom-select tm-select-accounts">
-								<option value="">${empty requestScope.mgrEmployeeList ?'해당하는 직원이없습니다':'직속상관을 선택하지 않습니다'}
-								</option>
+								<option value="">${empty requestScope.mgrEmployeeList ?'해당하는 직원이없습니다':'직속상관을 선택하지 않습니다'}</option>
 								<c:forEach items="${requestScope.mgrEmployeeList}" var="mgrList"
 									varStatus="loopTagStatus">
 									<option value="${mgrList.mgr_emp_no}">${mgrList.mgr_dep_name}

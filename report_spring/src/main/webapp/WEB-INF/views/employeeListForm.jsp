@@ -21,7 +21,7 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>헬로웍스 - 직원관리</title>
+	<title>Accounts - Product Admin Template</title>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
 	<!-- https://fonts.google.com/specimen/Roboto -->
 	<link rel="stylesheet" href="/ware/resources/css/fontawesome.min.css">
@@ -188,6 +188,12 @@
 			inputData("selectPageNo", "1");
 			document.employeeSearch.submit();
 		}
+		      
+		function setSearch(){
+			inputData("keyword", "임은석");
+			inputData("dep_no", "1");
+			inputData("jikup_code", "1");
+		}
 	</script>
 </head>
 
@@ -335,6 +341,11 @@
 										<option value="25">25
 										<option value="30">30
 									</select>
+								</td>
+								<td>
+									<input type="button" style="font-size: 13; min-width: 50;"
+										class="btn btn-small btn-primary btn-block text-uppercase" value="입력"
+										onclick="setSearch();">
 								</td>
 							</tr>
 						</table>

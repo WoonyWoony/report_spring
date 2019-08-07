@@ -278,10 +278,12 @@
 							alert("서버 접속 실패!");
 						}
 					});
-				} else if (a == "" && b == "") {
-					document.employeeUpDelForm.submit();
-				}
-			}
+				} 
+				else if (a == "" && b =="") {
+					// alert($("[name=mgr_emp_no]").find(':first-child'));
+					$("[name=mgr_emp_no]").find(':first-child').text("해당하는 직원이없습니다");
+					$("[name=mgr_emp_no]").find(':first-child').siblings().remove();
+				}			}
 		}
 	</script>
 	<style>
