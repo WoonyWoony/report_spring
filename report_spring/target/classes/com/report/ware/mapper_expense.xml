@@ -89,6 +89,24 @@
 				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE EXPENSE_PRICE BETWEEN ${expense_price_min} AND ${expense_price_max})
 			)
 		</if>
+		
+		<if test="expense_price_min != null and expense_price_min.length()>0 and ( expense_price_max == null or expense_price_max.length()==0)">
+			AND
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE EXPENSE_PRICE >= ${expense_price_min})
+				]]>
+			)
+		</if>
+		
+		<if test="expense_price_max != null and expense_price_max.length()>0 and ( expense_price_min == null or expense_price_min.length()==0)">
+			AND
+			(
+				<![CDATA[
+				REPORT_NO IN (SELECT REPORT_NO FROM EXPENSE_REPORT WHERE EXPENSE_PRICE <= ${expense_price_max})
+				]]>
+			)
+		</if>
 		<if test="keyword != null and keyword.length()>0">
 			and 
 			(
