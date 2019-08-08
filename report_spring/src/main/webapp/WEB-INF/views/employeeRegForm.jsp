@@ -133,27 +133,6 @@
 				}else{
 					$('.emp_pwd_valid').text("체크");
 				}
-
-				var role = $("[name=role]").val();
-				if (role != "ADMIN") {
-					var dept = $("[name=dep_no]").val();
-					if (dept.split(" ").join("") == "") {
-						$('.dep_no_valid').text("소속부서를 선택해 주십시오");
-						$("[name=dep_no]").focus();
-						return;
-					}else{
-						$('.dep_no_valid').text("체크");
-					}
-					var jikup = $("[name=jikup_code]").val();
-					if (dept.split(" ").join("") == "") {
-						$('.jikup_code_valid ').text("직급을 선택해 주십시오");
-						$("[name=dep_no]").focus();
-						return;
-					}else{
-						$('.jikup_code_valid').text("체크");
-					}
-				}
-
 				var Val = $(".jumin_num").val();
 				var reg_jumin = /^(?:[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[1,2][0-9]|3[0,1]))[1-4][0-9]{6}$/;
 				if (Val.length == 13 && reg_jumin.test(Val)) {
@@ -181,6 +160,28 @@
 					$("[name=email]").focus();
 					return;
 				}
+
+				var role = $("[name=role]").val();
+				if (role != "ADMIN") {
+					var dept = $("[name=dep_no]").val();
+					if (dept.split(" ").join("") == "") {
+						$('.dep_no_valid').text("소속부서를 선택해 주십시오");
+						$("[name=dep_no]").focus();
+						return;
+					}else{
+						$('.dep_no_valid').text("체크");
+					}
+					var jikup = $("[name=jikup_code]").val();
+					if (jikup.split(" ").join("") == "") {
+						$('.jikup_code_valid').text("직급을 선택해 주십시오");
+						$("[name=jikup_code]").focus();
+						return;
+					}else{
+						$('.jikup_code_valid').text("체크");
+					}
+				}
+					
+
 
 				var phone = $("[name=phone_num]").val();
 				if (phone.split(" ").join("") == "") {
@@ -250,12 +251,10 @@
 						}
 					});
 				}
-				if (a == "" && b =="") {
+				else if (a == "" && b =="") {
 					// alert($("[name=mgr_emp_no]").find(':first-child'));
 					$("[name=mgr_emp_no]").find(':first-child').text("해당하는 직원이없습니다");
 					$("[name=mgr_emp_no]").find(':first-child').siblings().remove();
-					
-										
 				}
 			}
 		}
@@ -377,7 +376,7 @@
 						</div>
 						<div class="form-group col-lg-6">
 							<label for="emp_no">사번</label>
-							<input id="emp_no" name="emp_no" type="text" class="form-control validate emp_no" />
+							<input id="emp_no" name="emp_no" type="text" class="form-control validate emp_no onlynumber" maxlength="5" />
 							<div class=emp_no_valid></div>
 						</div>
 						<div class="form-group col-lg-6">
@@ -387,7 +386,7 @@
 						</div>
 						<div class="form-group col-lg-6">
 							<label for="jumin_num">주민등록번호</label>
-							<input id="jumin_num" name="jumin_num" type="text" class="form-control validate jumin_num" maxlength="13" placeholder=" - 없이 입력바람"/>
+							<input id="jumin_num" name="jumin_num" type="text" class="form-control validate jumin_num onlynumber" maxlength="13" placeholder=" - 없이 입력바람"/>
 							<div class=jumin_num_valid></div>
 						</div>
 						<div class="form-group col-lg-6">
@@ -435,7 +434,7 @@
 						</div>
 						<div class="form-group col-lg-6">
 							<label for="phone_num">전화번호</label>
-							<input id="phone_num" name="phone_num" type="tel" class="form-control validate phone_num" placeholder=" - 없이 입력바람"/>
+							<input id="phone_num" name="phone_num" type="tel" class="form-control validate phone_num onlynumber" maxlength="15"placeholder=" - 없이 입력바람"/>
 							<div class=phone_num_valid></div>
 						</div>
 						<div class="form-group col-lg-12">

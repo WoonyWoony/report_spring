@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-
+<!DOCTYPE html>
 <!-- JSP 기술의 한 종류인 [Include Directive]를 이용하여 common.jsp 파일 내의 소스를 삽입하기 -->
 <%@include file="common.jsp"%>
 <%@include file="checkLogin.jsp" %>
@@ -13,7 +13,7 @@
 <script src='/ware/resources/fullcalendar-3.10.0/gcal.js'></script>
 <script src='/ware/resources/fullcalendar-3.10.0/locale/ko.js'></script>
 
-<!DOCTYPE html>
+
 <html>
 
 <head>
@@ -45,6 +45,8 @@
 		</style>
 	<script>
 		$(document).ready(function () {
+			$("html, body").animate({ scrollTop: ${ scrollValue } }, "slow");
+			
 			$(window).scroll(function () {
 				var scrollValue = $(document).scrollTop();
 				$('[name=scrollValue]').val(scrollValue);
