@@ -212,7 +212,15 @@
 							alert("신규사원 등록성공!");
 							document.goEmployeeListForm.submit();
 						} else if (employeeRegCnt == -9) {
-							alert("이미 존재하는 직원번호입니다. 다시 확인해주세요");
+							$('.emp_no_valid').text("이미 등록된 사원번호입니다. 다시 입력해주세요");
+							$('.emp_no').focus();
+						} else if (employeeRegCnt == -8) {
+							$('.jumin_num_valid').text("이미 등록된 주민번호입니다. 다시 입력해주세요");
+							$('.jumin_num').focus();
+						} else if (employeeRegCnt == -7) { 
+							$('.email_valid').text("이미 등록된 이메일주소입니다. 다시 입력해주세요");
+							$('.email').focus();
+
 						} else {
 							alert("신규사원 등록실패!");
 						}

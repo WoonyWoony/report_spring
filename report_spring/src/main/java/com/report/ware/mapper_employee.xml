@@ -241,8 +241,14 @@
 		DELETE FROM employee WHERE emp_no=${emp_no}
 	</delete>	
 	
-	<select id="getAlreadyCnt" resultType="int">
-		SELECT COUNT(*) FROM EMPLOYEE WHERE EMP_NO = ${emp_no}
+	<select id="getAlready_emp_no_Cnt" resultType="int">
+		SELECT COUNT(*) FROM EMPLOYEE WHERE EMP_NO = ${emp_no} 
+	</select>`
+	<select id="getAlready_jumin_num_Cnt" resultType="int">
+		SELECT COUNT(*) FROM EMPLOYEE WHERE JUMIN_NUM = #{jumin_num} 
+	</select>
+	<select id="getAlready_email_Cnt" resultType="int">
+		SELECT COUNT(*) FROM EMPLOYEE WHERE EMAIL = #{email} 
 	</select>
 	
 	

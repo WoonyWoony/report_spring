@@ -6,7 +6,13 @@ import java.util.Map;
 public interface EmployeeService {
 
 	int insertemp(EmployeeDTO employeeDTO);
-	int getAlreadyCnt(EmployeeDTO employeeDTO);
+	// 직원등록시 사번 중복검사하는 메소드 선언
+	// 직원등록시 주민번호 중복검사하는 메소드 선언
+	// 직원등록시 이메일 중복검사하는 메소드 선언
+	int getAlready_emp_no_Cnt(EmployeeDTO employeeDTO);
+	int getAlready_jumin_num_Cnt(EmployeeDTO employeeDTO);
+	int getAlready_email_Cnt(EmployeeDTO employeeDTO);
+
 
 	List<Map<String,String>> getEmployeeList(EmployeeSearchDTO employeeSearchDTO);
 	List<Map<String,String>> getEmployeeList_beforeAllow(EmployeeSearchDTO employeeSearchDTO);

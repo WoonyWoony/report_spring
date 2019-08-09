@@ -191,15 +191,27 @@ public class EmployeeControlloer {
 	// ------------------------------------------------------------
 	@RequestMapping(value = "/employeeRegProc.do", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public Object insertEmployee(HttpSession session,EmployeeDTO employeeDTO,@RequestParam(value = "empRegCheck") String empRegCheck) {
+	public int insertEmployee(HttpSession session,EmployeeDTO employeeDTO,@RequestParam(value = "empRegCheck") String empRegCheck) {
 		int employeeRegCnt = 0;
 		System.out.println("employeeRegProc에서 empRegCheck --"+empRegCheck);
 		try {
 
 			if (empRegCheck.equals("yes")) {
-				int alreadyCnt = this.employeeService.getAlreadyCnt(employeeDTO);
-				if(alreadyCnt >0) {
+				// 등록 신입사원 사원 중복여부 체크
+				// 등록 신입사원 주민번호 중복여부 체크
+				// 등록 신입사원 이메일주소 중복여부 체크
+				int already_emp_no_Cnt = this.employeeService.getAlready_emp_no_Cnt(employeeDTO);
+				int already_jumin_num_Cnt = this.employeeService.getAlready_jumin_num_Cnt(employeeDTO);
+				int already_email_Cnt = this.employeeService.getAlready_email_Cnt(employeeDTO);
+
+				if(already_emp_no_Cnt >0) {
 					return -9;
+				}
+				if(already_jumin_num_Cnt >0) {
+					return -8;
+				}
+				if(already_email_Cnt >0) {
+					return -7;
 				}
 				// 사원정보가 등록이 적용된 행의 수를 리턴하는 메소드 호출
 				employeeRegCnt = this.employeeService.insertemp(employeeDTO);
@@ -209,6 +221,9 @@ public class EmployeeControlloer {
 				employeeRegCnt = this.employeeService.getMgrEmployeeCnt(employeeDTO);
 				//session.setAttribute("mgrEmployeeCnt", employeeRegCnt);
 			}				
+			
+			
+			
 		} catch (Exception ex) {
 			System.out.println("employeeController.insertEmployee(~) 메소드 호출 시 에러발생");
 		}
@@ -237,6 +252,8 @@ public class EmployeeControlloer {
 				employeeDTO.setDep_no(getEmployee.get("DEP_NO"));
 				employeeDTO.setJikup_code(getEmployee.get("JIKUP_CODE"));
 				session.setAttribute("beforeEmp_no", getEmployee.get("EMP_NO"));
+				session.setAttribute("beforeJumin_num", getEmployee.get("JUMIN_NUM"));
+				session.setAttribute("beforeEmail", getEmployee.get("EMAIL"));
 				if(employeeDTO.getDep_no() != null && employeeDTO.getJikup_code() != null) {
 					List<Map<String, String>> mgrEmployeeList = this.employeeService.getMgrEmployeeList(employeeDTO);
 					mav.addObject("mgrEmployeeList", mgrEmployeeList);
@@ -270,11 +287,24 @@ public class EmployeeControlloer {
 		try {
 			if (empCheck.equals("yes")) {
 				if(!employeeDTO.getBeforeEmp_no().equals(employeeDTO.getEmp_no())){
-					int alreadyCnt = this.employeeService.getAlreadyCnt(employeeDTO);
-					if(alreadyCnt >0) {
+					int already_emp_no_Cnt = this.employeeService.getAlready_emp_no_Cnt(employeeDTO);
+					if(already_emp_no_Cnt >0) {
 						return -9;
 					}				
 				}
+				else if( !employeeDTO.getBeforeJumin_num().equals(employeeDTO.getJumin_num()) ){
+					int already_jumin_num_Cnt = this.employeeService.getAlready_jumin_num_Cnt(employeeDTO);
+					if(already_jumin_num_Cnt>0) {
+						return -8;
+					}
+				}
+				else if( !employeeDTO.getBeforeEmail().equals(employeeDTO.getEmail()) ){
+					int already_email_Cnt = this.employeeService.getAlready_email_Cnt(employeeDTO);
+					if(already_email_Cnt>0) {
+						return -7;
+					}
+				}
+				
 				employeeUpDelCnt = this.employeeService.updateEmployee(employeeDTO);
 			}
 			else if(empCheck.equals("no")) {

@@ -25,6 +25,8 @@ public class EmployeeDTO {
 	
 	
 	private String beforeEmp_no;
+	private String beforeEmail;
+	private String beforeJumin_num;
 	private String allow_code;
 	
 	
@@ -39,6 +41,18 @@ public class EmployeeDTO {
 	}
 	public void setBeforeEmp_no(String beforeEmp_no) {
 		this.beforeEmp_no = beforeEmp_no;
+	}
+	public String getBeforeEmail() {
+		return beforeEmail;
+	}
+	public void setBeforeEmail(String beforeEmail) {
+		this.beforeEmail = beforeEmail;
+	}
+	public String getBeforeJumin_num() {
+		return beforeJumin_num;
+	}
+	public void setBeforeJumin_num(String beforeJumin_num) {
+		this.beforeJumin_num = beforeJumin_num;
 	}
 	public String getRowCntPerPage() {
 		return rowCntPerPage;

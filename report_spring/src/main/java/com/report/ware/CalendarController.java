@@ -102,38 +102,6 @@ public class CalendarController {
 		return mav;
 	}
 	
-//	@RequestMapping(value = "/calendarList2.do", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-//	@ResponseBody
-//	public String getCalendarList2(HttpSession session) {
-//		ModelAndView mav = new ModelAndView();
-//		mav.setViewName("calendarProc.jsp");
-//		String emp_no = (String) session.getAttribute("emp_no");
-//		JSONArray jsonArray = new JSONArray();
-//		String calendarJson = null;
-//		try {
-//			List<Map<String, String>> calendarList = this.calendarService.getCalendarList(emp_no);
-//			System.out.println(calendarList.toArray());
-//			
-//			for (int i = 0; i < calendarList.size(); i++) {
-//				JSONObject data = new JSONObject();
-//				data.put("id", calendarList.get(i).get("id"));
-//				data.put("title", calendarList.get(i).get("title"));
-//				data.put("start", calendarList.get(i).get("start"));
-//				data.put("end", calendarList.get(i).get("end"));
-//				jsonArray.add(i, data);
-//			}
-//			System.out.println(jsonArray.toString());
-//			calendarJson = jsonArray.toString();
-//			System.out.println("calendarJson : "+ calendarJson);
-//			mav.addObject("calendarJson", calendarJson);
-//			session.setAttribute("calendarJson", calendarJson);
-//		} catch (Exception e) {
-//			System.out.println(e);
-//			System.out.println("CalendarController.getCalendarList(~) 에서 에러발생");
-//		}
-//		return calendarJson;
-//	}
-	
 	@RequestMapping(value = "/deleteCalendar.do", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public int deleteCalendar(HttpSession session, @RequestParam Map<String,String> paramsMap) {

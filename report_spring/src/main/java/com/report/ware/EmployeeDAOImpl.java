@@ -20,9 +20,19 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 		return employeeRegUpCnt;
 	}
 	@Override
-	public int getAlreadyCnt(EmployeeDTO employeeDTO) {
-		int getAlreadyCnt = sqlSession.selectOne("com.report.ware.EmployeeDAO.getAlreadyCnt", employeeDTO);
-		return getAlreadyCnt;
+	public int getAlready_emp_no_Cnt(EmployeeDTO employeeDTO) {
+		int Already_emp_no_Cnt = sqlSession.selectOne(namespace + "getAlready_emp_no_Cnt", employeeDTO);
+		return Already_emp_no_Cnt;
+	}
+	@Override
+	public int getAlready_jumin_num_Cnt(EmployeeDTO employeeDTO) {
+		int Already_jumin_num_Cnt = sqlSession.selectOne(namespace + "getAlready_jumin_num_Cnt", employeeDTO);
+		return Already_jumin_num_Cnt;
+	}
+	@Override
+	public int getAlready_email_Cnt(EmployeeDTO employeeDTO) {
+		int Already_email_Cnt = sqlSession.selectOne(namespace + "getAlready_email_Cnt", employeeDTO);
+		return Already_email_Cnt;
 	}
 
 	@Override

@@ -240,9 +240,15 @@
 						if (employeeRegCnt == 1) {
 							alert("직원정보 수정 성공!");
 							document.${empuri}.submit();
-
 						} else if (employeeRegCnt == -9) {
-							alert("변경할 직원번호가 이미 존재하는 직원번호입니다.<br> 다시 확인해주세요");
+							$('.emp_no_valid').text("이미 등록된 사원번호입니다. 다시 입력해주세요");
+							$('.emp_no').focus();
+						} else if (employeeRegCnt == -8) {
+							$('.jumin_num_valid').text("이미 등록된 주민번호입니다. 다시 입력해주세요");
+							$('.jumin_num').focus();
+						} else if (employeeRegCnt == -7) {
+							$('.email_valid').text("이미 등록된 이메일주소입니다. 다시 입력해주세요");
+							$('.email').focus();						
 						} else {
 							alert("직원정보 수정 실패!");
 						}
@@ -405,7 +411,7 @@
 						</div>
 						<div class="form-group col-lg-6">
 							<label for="emp_no">변경할 사번</label>
-							<input value="${getEmployee.EMP_NO }" id="emp_no" name="emp_no" type="text" class="form-control validate emp_no onlynumber" />이전 사번:${beforeEmp_no}
+							<input value="${getEmployee.EMP_NO }" id="emp_no" name="emp_no" type="text" class="form-control validate emp_no onlynumber" maxlength="5" />이전 사번:${beforeEmp_no}
 							<div class=emp_no_valid></div>
 						</div>
 						<div class="form-group col-lg-6">
@@ -493,6 +499,8 @@
 						</div>
 						<input type="hidden" name=empCheck>
          				<input type="hidden" name=beforeEmp_no value="${beforeEmp_no}">
+         				<input type="hidden" name=beforeJumin_num value="${beforeJumin_num}">
+         				<input type="hidden" name=beforeEmail value="${beforeEmail}">
 					</form>
 				</div>
 			</div>

@@ -20,10 +20,21 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return employeeRegUpCnt;
 	}
 	@Override
-	public int getAlreadyCnt(EmployeeDTO employeeDTO) {
-		int getAlreadyCnt = this.employeeDAO.getAlreadyCnt(employeeDTO);
+	public int getAlready_emp_no_Cnt(EmployeeDTO employeeDTO) {
+		int getAlreadyCnt = this.employeeDAO.getAlready_emp_no_Cnt(employeeDTO);
 		return getAlreadyCnt;
 	}
+	@Override
+	public int getAlready_jumin_num_Cnt(EmployeeDTO employeeDTO) {
+		int getAlreadyCnt = this.employeeDAO.getAlready_jumin_num_Cnt(employeeDTO);
+		return getAlreadyCnt;
+	}
+	@Override
+	public int getAlready_email_Cnt(EmployeeDTO employeeDTO) {
+		int getAlreadyCnt = this.employeeDAO.getAlready_email_Cnt(employeeDTO);
+		return getAlreadyCnt;
+	}
+
 
 	@Override
 	public List<Map<String, String>> getEmployeeList(EmployeeSearchDTO employeeSearchDTO) {
