@@ -270,11 +270,19 @@
         });
 
         function showBoryu_reason() {
-            $("#boryu_reason").show();
-        }
-        function hideBoryu_reason() {
-            $("#boryu_reason").hide();
-        }
+			$("#boryu_reason").show();
+			if ($('[name=noNextSigner]').is(":checked")) {
+			} else {
+				$("[name=noNextSigner]").click();
+			}
+		}
+		function hideBoryu_reason() {
+			$("#boryu_reason").hide();
+			if ($('[name=noNextSigner]').is(":checked")) {
+				$("[name=noNextSigner]").click();
+			} else {
+			}
+		}
 
 
 
