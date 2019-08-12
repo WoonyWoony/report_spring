@@ -42,8 +42,7 @@
 	</if>
 </sql>
 
-
-	<select id="getEmployeeList" resultType="java.util.HashMap">
+<select id="getEmployeeList" resultType="java.util.HashMap">
 		select * from (	select	zzz.* , rownum RNUM	from 
 			( select
 				ALLOW_CODE||'' AS ALLOW_CODE 
@@ -71,9 +70,9 @@
 				</if>
 				(SELECT EMP_NO FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) 
 			) zzz )	where <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} and RNUM <= ${selectPageNo * rowCntPerPage} ]]> 
-	</select>
+</select>
 
-	<select id="getEmployeeListAllCnt" resultType="int">
+<select id="getEmployeeListAllCnt" resultType="int">
 		SELECT COUNT(*) FROM EMPLOYEE E
 		WHERE ALLOW_CODE = 2
 		<include refid="employeeWhere"></include>
@@ -109,7 +108,7 @@
 				(SELECT EMP_NO FROM EMPLOYEE WHERE EMP_NO = E.EMP_NO) 
 			) zzz )	where <![CDATA[ RNUM >= ${selectPageNo * rowCntPerPage - rowCntPerPage +1} and RNUM <= ${selectPageNo * rowCntPerPage} ]]> 
 	</select>
-
+	
 	<select id="getEmployeeListAllCnt_beforeAllow" resultType="int">
 		SELECT COUNT(*) FROM EMPLOYEE E
 		WHERE (ALLOW_CODE = 1 OR ALLOW_CODE = 3)
@@ -169,6 +168,7 @@
 		,dep_name "dep_name"
 		from code_dept
 	</select>
+	
 	<select id="getJikupList" resultType="java.util.HashMap">
 		select
 		jikup_code "jikup_code"
@@ -203,9 +203,7 @@
 		</if>
 		ORDER BY (SELECT JIKUP_CODE FROM CODE_JIKUP WHERE JIKUP_CODE = E.JIKUP_CODE), EMP_NO
 	</select>
-
-
-
+	
 	<select id="getEmployeeCnt" parameterType="com.report.ware.EmployeeDTO" resultType="int">
 		select count(*) from from EMPLOYEE E where emp_no=${emp_no}
 	</select>
@@ -219,22 +217,22 @@
 
 	
 	<update id="updateEmployee" >
-	UPDATE EMPLOYEE
-		SET
-		EMP_NO = ${emp_no}
-		, EMP_NAME = #{emp_name}
-		<if test="new_emp_pwd != null and new_emp_pwd.length() > 0">
-			, EMP_PWD = #{new_emp_pwd}
-		</if>
-		, JIKUP_CODE=#{jikup_code}
-		, EMAIL = #{email}
-		, ROLE = #{role}
-		, MGR_EMP_NO = #{mgr_emp_no}
-		, DEP_NO = #{dep_no}
-		, JUMIN_NUM = #{jumin_num}
-		, PHONE_NUM = #{phone_num}
-		, ALLOW_CODE = ${allow_code}
-		WHERE EMP_NO = ${beforeEmp_no}
+		UPDATE EMPLOYEE
+			SET
+			EMP_NO = ${emp_no}
+			, EMP_NAME = #{emp_name}
+			<if test="new_emp_pwd != null and new_emp_pwd.length() > 0">
+				, EMP_PWD = #{new_emp_pwd}
+			</if>
+			, JIKUP_CODE=#{jikup_code}
+			, EMAIL = #{email}
+			, ROLE = #{role}
+			, MGR_EMP_NO = #{mgr_emp_no}
+			, DEP_NO = #{dep_no}
+			, JUMIN_NUM = #{jumin_num}
+			, PHONE_NUM = #{phone_num}
+			, ALLOW_CODE = ${allow_code}
+			WHERE EMP_NO = ${beforeEmp_no}
 	</update>
 	
 	<delete id="deleteEmployee" >
@@ -243,13 +241,14 @@
 	
 	<select id="getAlready_emp_no_Cnt" resultType="int">
 		SELECT COUNT(*) FROM EMPLOYEE WHERE EMP_NO = ${emp_no} 
-	</select>`
+	</select>
+	
 	<select id="getAlready_jumin_num_Cnt" resultType="int">
 		SELECT COUNT(*) FROM EMPLOYEE WHERE JUMIN_NUM = #{jumin_num} 
 	</select>
+	
 	<select id="getAlready_email_Cnt" resultType="int">
 		SELECT COUNT(*) FROM EMPLOYEE WHERE EMAIL = #{email} 
 	</select>
-	
-	
+
 </mapper>
